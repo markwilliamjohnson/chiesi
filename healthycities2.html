@@ -5,18 +5,18 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Guided Data Analysis — Healthy Cities (Exemplar)</title>
 
-  <!-- Tabulator (spreadsheet-like grid) -->
-  <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
-  <script src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
+  <!-- Handsontable (spreadsheet-like grid) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@14.6.0/dist/handsontable.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/handsontable@14.6.0/dist/handsontable.min.js"></script>
 
-  <!-- Plotly (simple charts) -->
+  <!-- Plotly for simple charts -->
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 
   <style>
     :root { color-scheme: light; }
     body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
     header { padding: 14px 16px; border-bottom: 1px solid #e5e7eb; display:flex; gap:12px; align-items:center; }
-    header h1 { font-size: 16px; margin: 0; font-weight: 700; }
+    header h1 { font-size: 16px; margin: 0; font-weight: 750; }
     header .sub { color:#6b7280; font-size: 12px; }
 
     main { display:grid; grid-template-columns: 390px 1fr; height: calc(100vh - 56px); }
@@ -24,10 +24,14 @@
     section { padding: 14px; overflow:auto; }
 
     .card { border:1px solid #e5e7eb; border-radius: 12px; padding: 12px; margin-bottom: 12px; box-shadow: 0 1px 0 rgba(0,0,0,.02); background:#fff; }
+    .muted { color:#6b7280; font-size: 12px; line-height: 1.45; }
+    .warn { background:#fff7ed; border:1px solid #fed7aa; padding: 10px; border-radius: 12px; color:#9a3412; font-size: 12px; }
+    .ok { background:#f0fdf4; border:1px solid #bbf7d0; padding: 10px; border-radius: 12px; color:#166534; font-size: 12px; }
+
     .steps { display:flex; flex-direction:column; gap:8px; }
     .step { border:1px solid #e5e7eb; border-radius: 12px; padding: 10px; cursor:pointer; background:#fff; }
     .step.active { border-color:#111827; box-shadow: 0 0 0 2px rgba(17,24,39,.08); }
-    .step .t { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+    .step .t { font-weight: 750; font-size: 13px; margin-bottom: 4px; }
     .step .d { color:#6b7280; font-size: 12px; line-height: 1.35; }
 
     .row { display:flex; gap:8px; flex-wrap: wrap; align-items:center; }
@@ -40,30 +44,24 @@
     button.primary { background:#111827; color:white; border-color:#111827; }
     button:disabled { opacity:.5; cursor:not-allowed; }
 
-    .muted { color:#6b7280; font-size: 12px; line-height: 1.45; }
-    .warn { background:#fff7ed; border:1px solid #fed7aa; padding: 10px; border-radius: 12px; color:#9a3412; font-size: 12px; }
-    .ok { background:#f0fdf4; border:1px solid #bbf7d0; padding: 10px; border-radius: 12px; color:#166534; font-size: 12px; }
-
     code.inline { background:#f3f4f6; padding: 2px 6px; border-radius: 8px; }
 
-    /* IMPORTANT: give the grid a real box */
-    #grid { height: 430px; border:1px solid #e5e7eb; border-radius: 12px; overflow:hidden; }
+    .split { display:grid; grid-template-columns: 1.2fr .8fr; gap:12px; }
+
+    #sheetWrap { border:1px solid #e5e7eb; border-radius: 12px; overflow:hidden; height: 460px; }
+    #sheet { height: 460px; }
     #chart { height: 360px; border:1px solid #e5e7eb; border-radius: 12px; }
 
     .kpi { display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
     .kpi > div { border:1px solid #e5e7eb; border-radius: 12px; padding: 10px; }
-    .kpi .v { font-size: 18px; font-weight: 800; }
+    .kpi .v { font-size: 18px; font-weight: 850; }
     .kpi .l { font-size: 11px; color:#6b7280; }
-
-    .split { display:grid; grid-template-columns: 1.2fr .8fr; gap:12px; }
-    ul { margin: 8px 0 0 18px; }
-    ol { margin: 8px 0 0 18px; }
 
     @media (max-width: 980px){
       main{ grid-template-columns: 1fr; }
       aside{ border-right:none; border-bottom:1px solid #e5e7eb; }
       .split{ grid-template-columns: 1fr; }
-      #grid{ height: 360px; }
+      #sheetWrap, #sheet { height: 360px; }
       #chart{ height: 320px; }
     }
   </style>
@@ -71,24 +69,24 @@
 
 <body>
 <header>
-  <h1>Guided Data Analysis (Beginner-Friendly) — Healthy Cities Exemplar</h1>
-  <div class="sub">Embedded dataset + step-by-step “what/why/questions to ask” walkthrough</div>
+  <h1>Guided Data Analysis — Healthy Cities Exemplar</h1>
+  <div class="sub">Embedded “long table” + beginner step-by-step analysis (Handsontable grid)</div>
 </header>
 
 <main>
   <aside>
     <div class="card">
-      <div style="font-weight:800; font-size:13px;">What you’re looking at</div>
+      <div style="font-weight:850; font-size:13px;">What you’re looking at</div>
       <div class="muted" style="margin-top:8px;">
-        This app uses a <b>small example dataset</b> stored as a <b>long table</b>:
-        each row is one measurement (what/where/when/value).
+        This app uses a <b>small example dataset</b> that mimics real city datasets:
+        stored as a <b>long table</b>, where each row is one measurement.
         <br/><br/>
-        The steps teach: <b>what to do</b>, <b>why it matters</b>, and <b>what questions to ask</b>.
+        You’ll learn <b>what to do</b>, <b>why</b>, and <b>what questions to ask</b>—from scratch.
       </div>
     </div>
 
     <div class="card">
-      <div style="font-weight:800; font-size:13px; margin-bottom:8px;">Guided steps</div>
+      <div style="font-weight:850; font-size:13px; margin-bottom:8px;">Guided steps</div>
       <div class="steps" id="steps"></div>
       <div class="row" style="margin-top:10px;">
         <button id="btnPrev">← Prev</button>
@@ -97,7 +95,7 @@
     </div>
 
     <div class="card">
-      <div style="font-weight:800; font-size:13px; margin-bottom:8px;">Simple controls</div>
+      <div style="font-weight:850; font-size:13px; margin-bottom:8px;">Controls</div>
 
       <div class="row" style="margin-bottom:8px;">
         <label>View</label>
@@ -113,25 +111,25 @@
       </div>
 
       <div class="row" style="margin-bottom:8px;">
-        <label>Quick filter</label>
-        <input id="quickFilter" type="text" placeholder="type to search any field..." />
+        <label>Quick search</label>
+        <input id="quickFilter" type="text" placeholder="search any field..." />
       </div>
 
       <div class="row">
-        <button id="btnReset">Reset filters</button>
+        <button id="btnReset">Reset</button>
         <button id="btnPivot" class="primary">Build wide table</button>
       </div>
 
       <div class="muted" style="margin-top:10px;">
-        You can also use column header filters in the spreadsheet.
+        Tip: This is a teaching dataset. In real work, you’d load a CSV—but the analysis steps are the same.
       </div>
     </div>
 
     <div class="card">
-      <div style="font-weight:800; font-size:13px;">Mini “experiment”</div>
+      <div style="font-weight:850; font-size:13px;">Mini experiment</div>
       <div class="muted" style="margin-top:6px;">
-        After pivoting, we’ll check:
-        <br/>• <b>Tobacco availability</b> vs <b>Asthma expenditure</b>
+        After pivoting, we’ll run:
+        <br/>• <b>TobaccoAvailability</b> vs <b>AsthmaExpenditure_mean</b>
       </div>
       <div class="row" style="margin-top:10px;">
         <button id="btnRunExp" disabled>Run correlation</button>
@@ -148,17 +146,20 @@
 
     <div class="split">
       <div class="card">
-        <div>
-          <div style="font-weight:900; font-size:13px;">Spreadsheet</div>
-          <div class="muted" id="gridCaption">Long table view (raw measurements).</div>
+        <div style="font-weight:900; font-size:13px;">Spreadsheet</div>
+        <div class="muted" id="gridCaption" style="margin-top:6px;">Long table view (raw measurements).</div>
+        <div id="sheetWrap" style="margin-top:10px;">
+          <div id="sheet"></div>
         </div>
-        <div style="margin-top:10px;" id="grid"></div>
+        <div class="muted" style="margin-top:8px;">
+          You can click headers to sort. Use the search box to filter the dataset shown.
+        </div>
       </div>
 
       <div>
         <div class="card">
           <div style="font-weight:900; font-size:13px;">Chart / results</div>
-          <div class="muted" id="chartCaption" style="margin-top:6px;">Follow the steps; charts appear when relevant.</div>
+          <div class="muted" id="chartCaption" style="margin-top:6px;">Charts appear when relevant.</div>
           <div id="chart" style="margin-top:10px;"></div>
         </div>
 
@@ -174,19 +175,19 @@
     </div>
 
     <div class="card">
-      <div style="font-weight:900; font-size:13px;">Cheat sheet: Long vs Wide tables</div>
+      <div style="font-weight:900; font-size:13px;">Cheat sheet: what “pivot” means</div>
       <div class="muted" style="margin-top:8px;">
-        <b>Long table</b>: many rows per area (each metric/time is a row).<br/>
-        <b>Wide table</b>: one row per area with metrics as columns (easier for analysis).
+        <b>Long table:</b> many rows per area because each metric/time is a separate row.<br/>
+        <b>Wide table:</b> one row per area, with metrics as separate columns (easier for correlation/regression).
       </div>
     </div>
   </section>
 </main>
 
 <script>
-/* -----------------------------
+/* ============================
    Embedded exemplar dataset
------------------------------ */
+   ============================ */
 const EXEMPLAR_LONG = [
   // Riverside
   {TopCategory:"EnvironmentalDeterminants", SecondCategory:"BuiltEnvironment", ThirdCategory:"TobaccoAvailability", CityName:"Riverside", MSOACode:"RV01", MSOAName:"Riverside Central", Time:"None",   Key:"value",     Value:"0.38"},
@@ -215,42 +216,43 @@ const EXEMPLAR_LONG = [
   {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Hillford", MSOACode:"HF02", MSOAName:"Hillford West", Time:"2023-03", Key:"£/citizen", Value:"14.9"},
 ];
 
+const el = (id) => document.getElementById(id);
+
 const state = {
-  longRows: JSON.parse(JSON.stringify(EXEMPLAR_LONG)),
+  longRows: structuredClone(EXEMPLAR_LONG),
   wideRows: null,
   view: "long",
   stepIndex: 0,
-  grid: null,
-  tableReady: false,
+  hot: null,
+  currentRows: [],
+  currentColumns: [],
 };
 
-const el = (id) => document.getElementById(id);
-
-/* -----------------------------
+/* ============================
    Teaching steps
------------------------------ */
+   ============================ */
 const steps = [
   {
     title: "1) Start with a question",
-    desc: "Decide what you’re trying to learn.",
+    desc: "Define what you want to learn before touching the data.",
     render() {
       setStep(
-        "Start with a question (the most important step)",
+        "Start with a question (this drives everything)",
         `
-        Begin with a question, not a chart.
+        Data analysis begins with a question, not a chart.
         <br/><br/>
-        <b>Example question:</b> “Do areas with higher tobacco availability have higher asthma costs?”
+        <b>Example question:</b> “Do areas with more tobacco outlets have higher asthma costs?”
         <br/><br/>
-        <b>Questions to ask before analysis:</b>
+        <b>What to ask next:</b>
         <ul>
-          <li>What variables do I need (x and y)?</li>
-          <li>What is my unit of analysis (MSOA, city, month)?</li>
+          <li>What are my variables (x and y)?</li>
+          <li>What is my “unit” (MSOA, city, month)?</li>
           <li>Do I need to aggregate over time?</li>
         </ul>
         `,
-        tipBox(`In the spreadsheet, find <code class="inline">ThirdCategory</code>, <code class="inline">Time</code>, <code class="inline">Value</code>. What does one row represent?`)
+        warnBox(`In the grid, find <code class="inline">ThirdCategory</code>, <code class="inline">Time</code>, and <code class="inline">Value</code>. Ask: “What does one row represent?”`)
       );
-      safeShowLong();
+      showLong();
     }
   },
   {
@@ -258,98 +260,111 @@ const steps = [
     desc: "Long table: one row = one measurement.",
     render() {
       setStep(
-        "Understand the ‘long table’ (raw format)",
+        "Understand the long table (raw format)",
         `
-        Each row answers: <b>what / where / when / value</b>.
+        In a long table, each row is one measurement:
+        <b>what / where / when / value</b>.
         <ul>
-          <li><b>CityName</b> + <b>MSOACode</b> = where</li>
-          <li><b>ThirdCategory</b> = what indicator</li>
-          <li><b>Time</b> = when (or <code class="inline">None</code>)</li>
-          <li><b>Value</b> = the number you’ll analyze</li>
+          <li><b>CityName + MSOACode</b> = where</li>
+          <li><b>ThirdCategory</b> = what indicator (e.g., TobaccoAvailability)</li>
+          <li><b>Time</b> = when (or “None” if not a time series)</li>
+          <li><b>Value</b> = the number to analyse</li>
         </ul>
+        <b>Question to ask:</b> “Which indicators are time series and which are single values?”
         `,
-        okBox(`Rows with <code class="inline">Time</code> = “None” are not time series in this example.`)
+        okBox(`Search for <code class="inline">Time</code> = “None”. Those indicators don’t vary over time in this exemplar.`)
       );
-      safeShowLong();
+      showLong();
     }
   },
   {
     title: "3) Sanity checks",
-    desc: "Missing values, duplicates, units.",
+    desc: "Check missing values, duplicates, and units.",
     render() {
       setStep(
-        "Sanity checks (avoid wrong conclusions)",
+        "Sanity checks (how you avoid wrong conclusions)",
         `
-        Before analysis:
+        Before analysis, quickly check:
         <ol>
-          <li>Are Values numeric?</li>
-          <li>Do you have duplicates (same MSOA + indicator + time)?</li>
-          <li>What are the units? (see <code class="inline">Key</code>)</li>
+          <li><b>Missing values:</b> are any Values blank/non-numeric?</li>
+          <li><b>Duplicates:</b> same MSOA + indicator + time repeated?</li>
+          <li><b>Units:</b> what does <code class="inline">Key</code> mean?</li>
         </ol>
+        <b>Why:</b> if you mix units or double-count rows, your results can be wrong.
         `,
-        tipBox(`Use the quick filter: type “£/citizen”. Then ask: which indicators are expenditures?`)
+        warnBox(`Try searching “£/citizen”. Ask: “Which indicators are costs/expenditures?”`)
       );
-      safeShowLong();
+      showLong();
     }
   },
   {
     title: "4) Choose scope",
-    desc: "Pick a city / subset so you know what you’re comparing.",
+    desc: "Decide what subset you are analysing (city, time).",
     render() {
       setStep(
-        "Choose your analysis scope",
+        "Choose your scope (what are you comparing?)",
         `
         Scope decisions change results:
         <ul>
-          <li>All cities vs one city</li>
+          <li>One city vs all cities</li>
           <li>Which months/years?</li>
           <li>Which indicators?</li>
         </ul>
+        <b>Why:</b> If you don’t state scope, your analysis can’t be reproduced.
         `,
-        tipBox(`Use the <b>City</b> dropdown and observe how the table changes.`)
+        warnBox(`Use the City dropdown. Ask: “Am I comparing areas within one city, or mixing cities?”`)
       );
-      safeShowLong();
+      showLong();
     }
   },
   {
-    title: "5) Pivot to wide table",
-    desc: "Put x and y side-by-side per MSOA.",
+    title: "5) Pivot to a wide table",
+    desc: "Put variables side-by-side per MSOA.",
     render() {
       setStep(
         "Pivot: long → wide (analysis-ready)",
         `
-        For correlation, you want one row per MSOA with columns for your variables:
+        For correlation/regression, it’s easier if each MSOA is one row and indicators are columns.
+        <br/><br/>
+        This app’s wide table includes:
         <ul>
           <li><b>TobaccoAvailability</b> (single value)</li>
+          <li><b>Walkability</b> (single value)</li>
           <li><b>AsthmaExpenditure_mean</b> (mean across months)</li>
         </ul>
-        <b>Key question:</b> “How should I reduce time-series data?”
+        <b>Key question:</b> “How should I reduce time-series values?” (mean? last month? trend?)
         `,
-        okBox(`Click <b>Build wide table</b>. Then switch to “Wide table (pivoted)”.`)
+        okBox(`Click <b>Build wide table</b>, then switch View to “Wide table (pivoted)”.`)
       );
-      safeShowLong();
+      showLong();
     }
   },
   {
-    title: "6) Run the experiment",
-    desc: "Scatter plot + Pearson r (association).",
+    title: "6) Run a simple experiment",
+    desc: "Scatter plot + correlation (association, not causation).",
     render() {
       setStep(
-        "Experiment: Tobacco availability vs Asthma expenditure",
+        "Experiment: tobacco availability vs asthma expenditure",
         `
-        Steps:
+        Workflow:
         <ol>
-          <li>Define x and y</li>
+          <li>Define x: TobaccoAvailability</li>
+          <li>Define y: AsthmaExpenditure_mean</li>
           <li>Plot one dot per MSOA</li>
-          <li>Compute Pearson correlation</li>
+          <li>Compute Pearson correlation (quick association measure)</li>
         </ol>
-        <b>Remember:</b> Correlation is not causation.
+        <b>Important questions:</b>
+        <ul>
+          <li>Does correlation imply causation? (No.)</li>
+          <li>Are outliers driving the result?</li>
+          <li>What confounders might affect both?</li>
+        </ul>
         `,
-        tipBox(`Build the wide table first, then click <b>Run correlation</b>. Try one city vs all cities.`)
+        warnBox(`Build the wide table first. Then click <b>Run correlation</b>. Try one city vs all cities.`)
       );
-      safeShowWideIfReady();
+      showWideIfReady();
     }
-  },
+  }
 ];
 
 function setStep(title, bodyHtml, boxHtml) {
@@ -357,19 +372,19 @@ function setStep(title, bodyHtml, boxHtml) {
   el("stepBody").innerHTML = bodyHtml;
   el("stepBox").innerHTML = boxHtml || "";
 }
-function tipBox(html){ return `<div class="warn"><b>Try this:</b> ${html}</div>`; }
+function warnBox(html){ return `<div class="warn"><b>Try this:</b> ${html}</div>`; }
 function okBox(html){ return `<div class="ok"><b>Good to know:</b> ${html}</div>`; }
 
-/* -----------------------------
-   Numeric helpers
------------------------------ */
+/* ============================
+   Data + analysis helpers
+   ============================ */
 function toNum(x) {
   const n = Number(String(x ?? "").trim());
   return Number.isFinite(n) ? n : NaN;
 }
 function mean(arr) {
   let s=0,c=0;
-  for (const v of arr) if (Number.isFinite(v)) { s+=v; c++; }
+  for (const v of arr) if (Number.isFinite(v)) { s += v; c++; }
   return c ? s/c : NaN;
 }
 function pearson(xs, ys) {
@@ -379,169 +394,50 @@ function pearson(xs, ys) {
     if (Number.isFinite(x) && Number.isFinite(y)) pts.push([x,y]);
   }
   const n = pts.length;
-  if (n < 3) return {r: NaN, n};
+  if (n < 3) return { r: NaN, n };
 
   let sx=0, sy=0;
   for (const [x,y] of pts){ sx+=x; sy+=y; }
-  const mx=sx/n, my=sy/n;
+  const mx = sx/n, my = sy/n;
 
   let num=0, dx=0, dy=0;
   for (const [x,y] of pts){
-    const vx=x-mx, vy=y-my;
+    const vx = x-mx, vy=y-my;
     num += vx*vy;
-    dx  += vx*vx;
-    dy  += vy*vy;
+    dx += vx*vx;
+    dy += vy*vy;
   }
   const den = Math.sqrt(dx*dy);
   return { r: den ? num/den : NaN, n };
 }
 
-/* -----------------------------
-   Tabulator columns
------------------------------ */
-function longColumns() {
-  return [
-    { title: "TopCategory", field: "TopCategory", headerFilter: true, widthGrow: 2 },
-    { title: "SecondCategory", field: "SecondCategory", headerFilter: true, widthGrow: 2 },
-    { title: "ThirdCategory", field: "ThirdCategory", headerFilter: true, widthGrow: 2 },
-    { title: "CityName", field: "CityName", headerFilter: true, widthGrow: 2 },
-    { title: "MSOAName", field: "MSOAName", headerFilter: true, widthGrow: 2 },
-    { title: "MSOACode", field: "MSOACode", headerFilter: true, widthGrow: 1 },
-    { title: "Time", field: "Time", headerFilter: true, widthGrow: 1 },
-    { title: "Key", field: "Key", headerFilter: true, widthGrow: 1 },
-    { title: "Value", field: "Value", headerFilter: true, widthGrow: 1 },
-  ];
+/* ============================
+   Filtering (city + quick search)
+   ============================ */
+function getCity() {
+  return el("citySelect").value;
 }
-function wideColumns() {
-  return [
-    { title: "CityName", field: "CityName", headerFilter: true, widthGrow: 2 },
-    { title: "MSOAName", field: "MSOAName", headerFilter: true, widthGrow: 2 },
-    { title: "MSOACode", field: "MSOACode", headerFilter: true, widthGrow: 1 },
-    { title: "TobaccoAvailability", field: "TobaccoAvailability", sorter:"number", hozAlign:"right", widthGrow: 1 },
-    { title: "Walkability", field: "Walkability", sorter:"number", hozAlign:"right", widthGrow: 1 },
-    { title: "AsthmaExpenditure_mean", field: "AsthmaExpenditure_mean", sorter:"number", hozAlign:"right", widthGrow: 1 },
-    { title: "Asthma_nMonths", field: "Asthma_nMonths", sorter:"number", hozAlign:"right", widthGrow: 1 },
-  ];
-}
-
-/* -----------------------------
-   Grid init (IMPORTANT: wait for tableBuilt)
------------------------------ */
-function initGridOnce() {
-  if (state.grid) return;
-
-  const gridEl = document.getElementById("grid");
-  if (!gridEl) throw new Error('Cannot find <div id="grid">.');
-
-  // Create Tabulator ONCE. Do not call setColumns/setData until tableBuilt fires.
-  state.grid = new Tabulator(gridEl, {
-    height: "430px",
-    layout: "fitDataStretch",
-    placeholder: "No data.",
-    movableColumns: true,
-    pagination: true,
-    paginationSize: 20,
-    paginationSizeSelector: [20, 50, 100],
-    columns: longColumns(),
-    dataFiltered: updateKPIs,
-    dataLoaded: updateKPIs,
-    dataSorted: updateKPIs,
-    tableBuilt: () => {
-      state.tableReady = true;
-      // Once ready, show the initial view safely
-      safeShowLong();
-      refreshStep();
-    },
-  });
-}
-
-/* -----------------------------
-   Filters
------------------------------ */
-function applyCityFilter(rows) {
-  const city = el("citySelect").value;
-  if (city === "All cities") return rows;
-  return rows.filter(r => r.CityName === city);
-}
-function applyQuickFilterToGrid() {
-  if (!state.tableReady) return;
+function applyFilters(rows) {
+  const city = getCity();
   const q = el("quickFilter").value.trim().toLowerCase();
-  if (!q) {
-    state.grid.clearFilter(true);
-    updateKPIs();
-    return;
+
+  let out = rows;
+  if (city !== "All cities") out = out.filter(r => r.CityName === city);
+
+  if (q) {
+    out = out.filter(r => Object.values(r).some(v => String(v ?? "").toLowerCase().includes(q)));
   }
-  state.grid.setFilter((data) => Object.values(data).some(v => String(v ?? "").toLowerCase().includes(q)));
-  updateKPIs();
-}
-function resetAllFilters() {
-  if (!state.tableReady) return;
-  el("quickFilter").value = "";
-  state.grid.clearFilter(true);
-  state.grid.clearHeaderFilter();
-  updateKPIs();
+  return out;
 }
 
-/* -----------------------------
-   Safe view switching (queued tick)
-   This avoids ColumnManager header DOM races.
------------------------------ */
-function queue(fn) {
-  // run after browser has done layout; two RAFs is very robust
-  requestAnimationFrame(() => requestAnimationFrame(fn));
-}
-
-function safeSetColumnsAndData(columns, rows) {
-  if (!state.tableReady) return;
-  queue(() => {
-    state.grid.setColumns(columns);
-    state.grid.setData(rows);
-    state.grid.redraw(true);
-  });
-}
-
-function safeShowLong() {
-  if (!state.tableReady) return;
-  state.view = "long";
-  el("viewSelect").value = "long";
-  el("gridCaption").textContent = "Long table view (raw measurements).";
-  el("btnRunExp").disabled = true;
-
-  const rows = applyCityFilter(state.longRows);
-  safeSetColumnsAndData(longColumns(), rows);
-  clearChart("In long-table view. Build the wide table to run the experiment.");
-}
-
-function safeShowWideIfReady() {
-  if (!state.wideRows) {
-    clearChart("Build the wide table first (click “Build wide table”).");
-    return;
-  }
-  safeShowWide();
-}
-
-function safeShowWide() {
-  if (!state.tableReady) return;
-  state.view = "wide";
-  el("viewSelect").value = "wide";
-  el("gridCaption").textContent = "Wide table view (pivoted, analysis-ready).";
-  el("btnRunExp").disabled = false;
-
-  const rows = applyCityFilter(state.wideRows);
-  safeSetColumnsAndData(wideColumns(), rows);
-  clearChart("Wide table ready. Click “Run correlation” to create a chart.");
-}
-
-/* -----------------------------
-   Pivot long -> wide
------------------------------ */
-function buildWideTable() {
-  const base = applyCityFilter(state.longRows);
+/* ============================
+   Long/Wide table construction
+   ============================ */
+function buildWideTableFromLong(longRowsFiltered) {
   const byMSOA = new Map();
 
   function ensure(r) {
-    const key = r.MSOACode;
-    if (!byMSOA.has(key)) byMSOA.set(key, {
+    if (!byMSOA.has(r.MSOACode)) byMSOA.set(r.MSOACode, {
       CityName: r.CityName,
       MSOAName: r.MSOAName,
       MSOACode: r.MSOACode,
@@ -551,10 +447,10 @@ function buildWideTable() {
       Asthma_nMonths: 0,
       _asthma: [],
     });
-    return byMSOA.get(key);
+    return byMSOA.get(r.MSOACode);
   }
 
-  for (const r of base) {
+  for (const r of longRowsFiltered) {
     if (!r.MSOACode) continue;
     const row = ensure(r);
 
@@ -579,22 +475,125 @@ function buildWideTable() {
     delete row._asthma;
     out.push(row);
   }
-  out.sort((a,b)=>a.CityName.localeCompare(b.CityName) || a.MSOAName.localeCompare(b.MSOAName));
-  state.wideRows = out;
+  out.sort((a,b) => a.CityName.localeCompare(b.CityName) || a.MSOAName.localeCompare(b.MSOAName));
+  return out;
 }
 
-/* -----------------------------
-   Experiment
------------------------------ */
-function runCorrelation() {
-  if (!state.wideRows || !state.tableReady) return;
+/* ============================
+   Handsontable rendering
+   ============================ */
+function ensureHot() {
+  if (state.hot) return;
 
-  const rows = state.grid.getData("active") || [];
+  const container = el("sheet");
+  state.hot = new Handsontable(container, {
+    data: [],
+    colHeaders: [],
+    columns: [],
+    rowHeaders: true,
+    height: "100%",
+    stretchH: "all",
+    manualColumnResize: true,
+    manualRowResize: true,
+    columnSorting: true,
+    filters: true,
+    dropdownMenu: true,
+    licenseKey: "non-commercial-and-evaluation", // Handsontable CE/eval key for demos
+  });
+}
+
+function setSheet(rows, columnsOrder) {
+  ensureHot();
+
+  state.currentRows = rows;
+  state.currentColumns = columnsOrder;
+
+  const dataMatrix = rows.map(r => columnsOrder.map(c => r[c]));
+  const columnsSpec = columnsOrder.map(() => ({ readOnly: true }));
+
+  state.hot.updateSettings({
+    data: dataMatrix,
+    colHeaders: columnsOrder,
+    columns: columnsSpec
+  });
+
+  updateKPIs(rows);
+}
+
+function updateKPIs(rows) {
+  el("kpiRows").textContent = rows.length.toLocaleString();
+  const ms = new Set(rows.map(r => r.MSOACode).filter(Boolean));
+  el("kpiGroups").textContent = ms.size ? ms.size.toLocaleString() : "—";
+
+  if (state.view === "long") {
+    const noneTime = rows.filter(r => String(r.Time).toLowerCase() === "none").length;
+    el("kpiNote").textContent = `Long table check: rows with Time=None: ${noneTime.toLocaleString()}.`;
+  } else {
+    const missing = rows.filter(r =>
+      !Number.isFinite(toNum(r.TobaccoAvailability)) || !Number.isFinite(toNum(r.AsthmaExpenditure_mean))
+    ).length;
+    el("kpiNote").textContent = `Wide table check: rows missing x or y for experiment: ${missing.toLocaleString()}.`;
+  }
+}
+
+/* ============================
+   Views
+   ============================ */
+const LONG_COLS = ["TopCategory","SecondCategory","ThirdCategory","CityName","MSOAName","MSOACode","Time","Key","Value"];
+const WIDE_COLS = ["CityName","MSOAName","MSOACode","TobaccoAvailability","Walkability","AsthmaExpenditure_mean","Asthma_nMonths"];
+
+function clearChart(msg) {
+  Plotly.purge("chart");
+  Plotly.newPlot("chart", [], { margin: {t: 20, r: 10, b: 40, l: 50} }, {displaylogo:false, responsive:true});
+  el("chartCaption").textContent = msg;
+}
+
+function showLong() {
+  state.view = "long";
+  el("viewSelect").value = "long";
+  el("gridCaption").textContent = "Long table view (raw measurements).";
+  el("btnRunExp").disabled = true;
+
+  const rows = applyFilters(state.longRows);
+  setSheet(rows, LONG_COLS);
+  clearChart("In long-table view. Build the wide table to run the experiment.");
+}
+
+function showWideIfReady() {
+  if (!state.wideRows) {
+    clearChart("Build the wide table first (click “Build wide table”).");
+    return;
+  }
+  showWide();
+}
+
+function showWide() {
+  state.view = "wide";
+  el("viewSelect").value = "wide";
+  el("gridCaption").textContent = "Wide table view (pivoted, analysis-ready).";
+  el("btnRunExp").disabled = false;
+
+  const rows = applyFilters(state.wideRows);
+  setSheet(rows, WIDE_COLS);
+  clearChart("Wide table ready. Click “Run correlation” to create a chart.");
+}
+
+/* ============================
+   Experiment
+   ============================ */
+function runCorrelation() {
+  if (!state.wideRows) return;
+
+  const rows = applyFilters(state.wideRows);
   const xs = [], ys = [], labels = [];
+
   for (const r of rows) {
-    xs.push(toNum(r.TobaccoAvailability));
-    ys.push(toNum(r.AsthmaExpenditure_mean));
-    labels.push(`${r.CityName} — ${r.MSOAName} (${r.MSOACode})`);
+    const x = toNum(r.TobaccoAvailability);
+    const y = toNum(r.AsthmaExpenditure_mean);
+    if (Number.isFinite(x) && Number.isFinite(y)) {
+      xs.push(x); ys.push(y);
+      labels.push(`${r.CityName} — ${r.MSOAName} (${r.MSOACode})`);
+    }
   }
 
   const { r, n } = pearson(xs, ys);
@@ -606,11 +605,14 @@ function runCorrelation() {
     y: ys,
     text: labels,
     hovertemplate: "%{text}<br><b>Tobacco</b>=%{x}<br><b>Asthma mean</b>=%{y}<extra></extra>",
-    marker: { size: 8, opacity: 0.8 },
+    marker: { size: 9, opacity: 0.8 },
   };
 
   const layout = {
-    title: { text: `Tobacco availability vs Asthma expenditure<br><span style="font-size:12px;color:#6b7280">Pearson r = ${Number.isFinite(r) ? r.toFixed(3) : "NA"} (n=${n})</span>`, x: 0, xanchor: "left" },
+    title: {
+      text: `Tobacco availability vs Asthma expenditure<br><span style="font-size:12px;color:#6b7280">Pearson r = ${Number.isFinite(r) ? r.toFixed(3) : "NA"} (n=${n})</span>`,
+      x: 0, xanchor: "left"
+    },
     margin: { t: 60, r: 10, b: 55, l: 70 },
     xaxis: { title: "TobaccoAvailability (example scale)", zeroline: false },
     yaxis: { title: "AsthmaExpenditure_mean (example £/citizen)", zeroline: false },
@@ -621,38 +623,12 @@ function runCorrelation() {
     `One dot per MSOA. Pearson r summarizes association (not causation). r=${Number.isFinite(r) ? r.toFixed(3) : "NA"}, n=${n}.`;
 
   el("kpiNote").textContent =
-    "Interpretation tip: check outliers and confounders (e.g., income, age, pollution).";
+    "Interpretation tip: check outliers, then ask what confounders (income, age, pollution) might explain both variables.";
 }
 
-/* -----------------------------
-   KPIs + chart
------------------------------ */
-function updateKPIs() {
-  if (!state.tableReady) return;
-  const rows = state.grid.getData("active") || [];
-  el("kpiRows").textContent = rows.length.toLocaleString();
-
-  const ms = new Set();
-  for (const r of rows) if (r.MSOACode) ms.add(r.MSOACode);
-  el("kpiGroups").textContent = ms.size ? ms.size.toLocaleString() : "—";
-
-  if (state.view === "long") {
-    const noneTime = rows.filter(r => String(r.Time).toLowerCase() === "none").length;
-    el("kpiNote").textContent = `Long-table check: rows with Time=None: ${noneTime.toLocaleString()}.`;
-  } else {
-    const missing = rows.filter(r => !Number.isFinite(toNum(r.AsthmaExpenditure_mean)) || !Number.isFinite(toNum(r.TobaccoAvailability))).length;
-    el("kpiNote").textContent = `Wide-table check: rows missing x or y: ${missing.toLocaleString()}.`;
-  }
-}
-function clearChart(msg) {
-  Plotly.purge("chart");
-  Plotly.newPlot("chart", [], { margin: {t: 20, r: 10, b: 40, l: 50} }, {displaylogo:false, responsive:true});
-  el("chartCaption").textContent = msg;
-}
-
-/* -----------------------------
+/* ============================
    Step UI
------------------------------ */
+   ============================ */
 function renderSteps() {
   const wrap = el("steps");
   wrap.innerHTML = "";
@@ -671,12 +647,12 @@ function refreshStep() {
   el("btnNext").disabled = state.stepIndex === steps.length - 1;
 }
 
-/* -----------------------------
+/* ============================
    Boot
------------------------------ */
+   ============================ */
 window.addEventListener("DOMContentLoaded", () => {
-  // Populate city select first
-  const cities = ["All cities", ...Array.from(new Set(EXEMPLAR_LONG.map(r=>r.CityName))).sort()];
+  // Populate city dropdown
+  const cities = ["All cities", ...Array.from(new Set(state.longRows.map(r => r.CityName))).sort()];
   const cs = el("citySelect");
   cities.forEach(c => {
     const opt = document.createElement("option");
@@ -685,27 +661,42 @@ window.addEventListener("DOMContentLoaded", () => {
   });
   cs.value = "All cities";
 
-  // Wire UI (safe even before tableBuilt)
-  el("quickFilter").addEventListener("input", applyQuickFilterToGrid);
+  // Ensure chart placeholder
+  clearChart("Follow the steps; charts appear when relevant.");
+
+  // Init grid once
+  ensureHot();
+
+  // Wire UI
+  el("quickFilter").addEventListener("input", () => {
+    if (state.view === "long") showLong();
+    else showWideIfReady();
+  });
 
   el("citySelect").addEventListener("change", () => {
-    if (!state.tableReady) return;
-    if (state.view === "long") safeShowLong();
-    else safeShowWideIfReady();
+    if (state.view === "long") showLong();
+    else showWideIfReady();
   });
 
   el("viewSelect").addEventListener("change", () => {
-    if (!state.tableReady) return;
     const v = el("viewSelect").value;
-    if (v === "long") safeShowLong();
-    else safeShowWideIfReady();
+    if (v === "long") showLong();
+    else showWideIfReady();
   });
 
-  el("btnReset").onclick = () => resetAllFilters();
+  el("btnReset").onclick = () => {
+    el("quickFilter").value = "";
+    cs.value = "All cities";
+    if (state.view === "long") showLong();
+    else showWideIfReady();
+  };
 
   el("btnPivot").onclick = () => {
-    buildWideTable();
-    safeShowWideIfReady();
+    // pivot from the CURRENT filtered long rows (so the user learns scope matters)
+    const longFiltered = applyFilters(state.longRows);
+    state.wideRows = buildWideTableFromLong(longFiltered);
+    el("btnRunExp").disabled = false;
+    showWideIfReady();
   };
 
   el("btnRunExp").onclick = () => runCorrelation();
@@ -713,10 +704,9 @@ window.addEventListener("DOMContentLoaded", () => {
   el("btnPrev").onclick = () => { state.stepIndex = Math.max(0, state.stepIndex - 1); refreshStep(); };
   el("btnNext").onclick = () => { state.stepIndex = Math.min(steps.length - 1, state.stepIndex + 1); refreshStep(); };
 
-  clearChart("Loading table…");
-
-  // Create Tabulator last — and let tableBuilt drive the first render
-  initGridOnce();
+  // Initial
+  showLong();
+  refreshStep();
 });
 </script>
 </body>
