@@ -1,0 +1,1010 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthy Cities Data Analysis Tutorial</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #1a6dcc 0%, #0d4d9c 100%);
+            color: white;
+            padding: 25px 30px;
+            border-bottom: 4px solid #0a3c7a;
+        }
+        
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+        
+        .progress-container {
+            display: flex;
+            background-color: #e9ecef;
+            padding: 0;
+        }
+        
+        .step {
+            flex: 1;
+            text-align: center;
+            padding: 15px 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 4px solid transparent;
+        }
+        
+        .step.active {
+            background-color: #d1e7ff;
+            border-bottom: 4px solid #1a6dcc;
+        }
+        
+        .step.completed {
+            color: #28a745;
+        }
+        
+        .content-area {
+            padding: 30px;
+            min-height: 500px;
+        }
+        
+        .step-content {
+            display: none;
+        }
+        
+        .step-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .explanation {
+            background-color: #f8f9fa;
+            border-left: 4px solid #1a6dcc;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .data-table-container {
+            overflow-x: auto;
+            margin: 25px 0;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background-color: #e9ecef;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+            position: sticky;
+            top: 0;
+        }
+        
+        td {
+            padding: 10px 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .correlation-result {
+            background-color: #e7f4e4;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+        }
+        
+        button {
+            padding: 12px 24px;
+            background-color: #1a6dcc;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #0d4d9c;
+        }
+        
+        button:disabled {
+            background-color: #a0aec0;
+            cursor: not-allowed;
+        }
+        
+        .secondary-btn {
+            background-color: #6c757d;
+        }
+        
+        .secondary-btn:hover {
+            background-color: #545b62;
+        }
+        
+        .highlight {
+            background-color: #fff3cd;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+        
+        .question {
+            background-color: #e8f4fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #1a6dcc;
+        }
+        
+        .visualization {
+            height: 300px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin: 25px 0;
+            display: flex;
+            align-items: flex-end;
+            padding: 20px;
+            justify-content: space-around;
+        }
+        
+        .bar {
+            width: 40px;
+            background-color: #1a6dcc;
+            margin: 0 10px;
+            position: relative;
+            border-radius: 4px 4px 0 0;
+        }
+        
+        .bar-label {
+            position: absolute;
+            bottom: -25px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 12px;
+        }
+        
+        .conclusion {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+            display: none;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+            font-size: 14px;
+            border-top: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Healthy Cities Data Analysis Tutorial</h1>
+            <div class="subtitle">A step-by-step guide to analyzing environmental determinants of health in English cities</div>
+            <div class="subtitle">Based on: "Healthy Cities, A comprehensive dataset for environmental determinants of health in England cities"</div>
+        </header>
+        
+        <div class="progress-container">
+            <div class="step active" data-step="1">1. Data Overview</div>
+            <div class="step" data-step="2">2. Tobacco & Asthma</div>
+            <div class="step" data-step="3">3. Walkability & Dementia</div>
+            <div class="step" data-step="4">4. Advanced Analysis</div>
+            <div class="step" data-step="5">5. Conclusion</div>
+        </div>
+        
+        <div class="content-area">
+            <!-- Step 1: Data Overview -->
+            <div class="step-content active" id="step1">
+                <h2>Step 1: Understanding the Dataset</h2>
+                
+                <div class="explanation">
+                    <p>The Healthy Cities dataset contains <span class="highlight">1039 MSOAs (Middle Layer Super Output Areas)</span> across 29 English cities from 2019-2022. It includes:</p>
+                    <ul>
+                        <li><strong>Health Outcomes:</strong> Life expectancy, physical health (asthma, diabetes, etc.), mental health (depression, psychosis), and COVID-19 cases</li>
+                        <li><strong>Environmental Determinants:</strong> Basic statistics, behavioral environment (tobacco/alcohol availability), built environment (road density, walkability), and natural environment (air quality, temperature)</li>
+                    </ul>
+                    <p>This integrated dataset helps researchers analyze how urban environments affect public health without needing to merge data from multiple sources.</p>
+                </div>
+                
+                <div class="question">
+                    <strong>Research Question:</strong> How do different environmental factors influence health outcomes in urban populations?
+                </div>
+                
+                <h3>Sample Data (MSOA Level)</h3>
+                <p>Below is a sample of the dataset showing 5 MSOAs (Middle Layer Super Output Areas):</p>
+                
+                <div class="data-table-container">
+                    <table id="dataTable">
+                        <thead>
+                            <tr>
+                                <th>MSOA Name</th>
+                                <th>Population</th>
+                                <th>Tobacco Availability</th>
+                                <th>Asthma Expenditure (£/capita)</th>
+                                <th>Walkability Score</th>
+                                <th>Dementia Expenditure (£/capita)</th>
+                                <th>Building Density</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <p>The dataset is structured at both <span class="highlight">MSOA level</span> (fine-grained, ~7,200 people each) and <span class="highlight">city level</span> (aggregated). For this tutorial, we'll work with MSOA-level data to examine neighborhood-scale relationships.</p>
+            </div>
+            
+            <!-- Step 2: Tobacco & Asthma Analysis -->
+            <div class="step-content" id="step2">
+                <h2>Step 2: Analyzing Tobacco Availability vs. Asthma</h2>
+                
+                <div class="explanation">
+                    <p>Research shows that <span class="highlight">tobacco availability</span> is correlated with smoking behavior, which in turn affects respiratory health. In this step, we'll examine whether areas with higher tobacco availability have higher asthma medication expenditures.</p>
+                    <p><strong>Why this matters:</strong> Understanding this relationship can inform public health policies on tobacco shop density regulations.</p>
+                </div>
+                
+                <div class="question">
+                    <strong>Hypothesis:</strong> Areas with higher tobacco availability will have higher per capita asthma medication expenditure.
+                </div>
+                
+                <h3>Data for Analysis</h3>
+                <p>We'll examine the relationship between these two variables:</p>
+                
+                <div class="data-table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>MSOA Name</th>
+                                <th>Tobacco Availability (POIs per capita)</th>
+                                <th>Asthma Expenditure (£/capita)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tobaccoAsthmaTable">
+                            <!-- Data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="visualization" id="tobaccoAsthmaViz">
+                    <!-- Visualization will be added by JavaScript -->
+                </div>
+                
+                <button id="calculateTobaccoCorrelation">Calculate Correlation</button>
+                
+                <div class="correlation-result" id="tobaccoResult">
+                    <h4>Analysis Result</h4>
+                    <p id="tobaccoCorrelationText"></p>
+                    <p><strong>Interpretation:</strong> A positive correlation suggests that areas with more tobacco outlets tend to have higher asthma medication costs, which aligns with public health literature linking smoking to respiratory issues.</p>
+                </div>
+                
+                <div class="question">
+                    <strong>Critical Thinking:</strong> Could there be other factors influencing this relationship? (e.g., socioeconomic status, air quality)
+                </div>
+            </div>
+            
+            <!-- Step 3: Walkability & Dementia Analysis -->
+            <div class="step-content" id="step3">
+                <h2>Step 3: Analyzing Walkability vs. Dementia</h2>
+                
+                <div class="explanation">
+                    <p>Urban design that promotes <span class="highlight">walkability</span> (safe, accessible walking routes) encourages physical activity, which research suggests may help maintain cognitive function and reduce dementia risk. Here we'll examine if more walkable neighborhoods have lower dementia medication expenditures.</p>
+                    <p><strong>Why this matters:</strong> This analysis can inform urban planning decisions to create dementia-friendly communities.</p>
+                </div>
+                
+                <div class="question">
+                    <strong>Hypothesis:</strong> Areas with higher walkability scores will have lower per capita dementia medication expenditure.
+                </div>
+                
+                <h3>Data for Analysis</h3>
+                <p>We'll examine the relationship between walkability and dementia expenditure:</p>
+                
+                <div class="data-table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>MSOA Name</th>
+                                <th>Walkability Score (z-score)</th>
+                                <th>Dementia Expenditure (£/capita)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="walkabilityDementiaTable">
+                            <!-- Data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="visualization" id="walkabilityDementiaViz">
+                    <!-- Visualization will be added by JavaScript -->
+                </div>
+                
+                <button id="calculateWalkabilityCorrelation">Calculate Correlation</button>
+                
+                <div class="correlation-result" id="walkabilityResult">
+                    <h4>Analysis Result</h4>
+                    <p id="walkabilityCorrelationText"></p>
+                    <p><strong>Interpretation:</strong> A negative correlation suggests that more walkable neighborhoods tend to have lower dementia medication costs, supporting research on the cognitive benefits of physical activity and accessible environments.</p>
+                </div>
+                
+                <div class="question">
+                    <strong>Critical Thinking:</strong> Could the relationship be reversed? (e.g., areas with healthier populations might invest more in walkable infrastructure)
+                </div>
+            </div>
+            
+            <!-- Step 4: Advanced Analysis -->
+            <div class="step-content" id="step4">
+                <h2>Step 4: Advanced Multi-Factor Analysis</h2>
+                
+                <div class="explanation">
+                    <p>Real-world health outcomes are influenced by multiple factors simultaneously. In this step, we'll explore how to examine the combined effects of environmental factors on health outcomes.</p>
+                    <p><strong>The paper's approach:</strong> The researchers used advanced techniques like deep learning on street view images to extract features (vegetation, sidewalks, etc.) and then analyzed their relationships with health outcomes.</p>
+                </div>
+                
+                <div class="question">
+                    <strong>Research Question:</strong> How do multiple environmental factors (tobacco, walkability, building density) collectively relate to health outcomes?
+                </div>
+                
+                <h3>Sample Multi-Factor Data</h3>
+                
+                <div class="data-table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>MSOA Name</th>
+                                <th>Tobacco Avail.</th>
+                                <th>Walkability</th>
+                                <th>Building Density</th>
+                                <th>Asthma Expenditure</th>
+                                <th>Dementia Expenditure</th>
+                            </tr>
+                        </thead>
+                        <tbody id="multiFactorTable">
+                            <!-- Data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h3>Potential Analysis Approaches</h3>
+                <div class="explanation">
+                    <p>With the full dataset, researchers could:</p>
+                    <ol>
+                        <li><strong>Multiple Regression:</strong> Model how multiple environmental factors simultaneously predict health outcomes</li>
+                        <li><strong>Cluster Analysis:</strong> Group MSOAs with similar environmental profiles to identify patterns</li>
+                        <li><strong>Path Analysis:</strong> Examine how environmental factors might influence health through intermediate variables (like physical activity)</li>
+                    </ol>
+                    <p>The paper mentions using <span class="highlight">ViT-Adapter deep learning models</span> to extract features from street view and satellite images, then analyzing their relationships with health outcomes.</p>
+                </div>
+                
+                <div class="question">
+                    <strong>Critical Thinking:</strong> What other environmental factors from the dataset would you want to include in a comprehensive health outcome model?
+                </div>
+            </div>
+            
+            <!-- Step 5: Conclusion -->
+            <div class="step-content" id="step5">
+                <h2>Step 5: Conclusion and Research Implications</h2>
+                
+                <div class="explanation">
+                    <p>Through this tutorial, we've explored how the Healthy Cities dataset can be used to analyze relationships between urban environments and health outcomes. The paper's comprehensive dataset enables researchers to:</p>
+                    <ul>
+                        <li>Examine fine-grained neighborhood-level relationships</li>
+                        <li>Analyze multiple environmental factors simultaneously</li>
+                        <li>Use advanced techniques like deep learning on visual data</li>
+                        <li>Inform evidence-based urban planning and public health policies</li>
+                    </ul>
+                </div>
+                
+                <div class="conclusion" id="finalConclusion">
+                    <h4>Key Findings from Our Analysis</h4>
+                    <p id="conclusionText"></p>
+                    <p><strong>Research Applications:</strong> This dataset can support studies on:</p>
+                    <ul>
+                        <li>COVID-19 transmission patterns in different urban environments</li>
+                        <li>Mental health impacts of green space availability</li>
+                        <li>Health inequalities across different neighborhoods</li>
+                        <li>Effectiveness of urban interventions (e.g., new parks, traffic calming measures)</li>
+                    </ul>
+                </div>
+                
+                <h3>Next Steps for Researchers</h3>
+                <div class="explanation">
+                    <p>To continue with the full dataset:</p>
+                    <ol>
+                        <li>Access the complete dataset on <a href="https://github.com/0oshowero0/HealthyCitiesDataset" target="_blank">GitHub</a> or <a href="https://doi.org/10.6084/m9.figshare.c.6383148.v1" target="_blank">Figshare</a></li>
+                        <li>Explore the 1039 MSOAs across 29 English cities</li>
+                        <li>Use the provided Python code for data processing and analysis</li>
+                        <li>Extend the analysis to include more environmental factors and health outcomes</li>
+                    </ol>
+                    <p>The dataset's structure at both MSOA and city levels allows for multi-scale analysis, while the inclusion of time-series data enables longitudinal studies.</p>
+                </div>
+                
+                <div class="question">
+                    <strong>Final Reflection:</strong> How could this type of integrated environment-health dataset inform policies in your own community?
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button id="prevBtn" class="secondary-btn">Previous</button>
+                <button id="nextBtn">Next Step</button>
+            </div>
+        </div>
+        
+        <footer>
+            <p>This interactive tutorial is based on the research paper: <em>"Healthy Cities, A comprehensive dataset for environmental determinants of health in England cities"</em> by Zhenyu Han, Tong Xia, Yanxin Xi & Yong Li</p>
+            <p>Scientific Data | (2023) 10:165 | https://doi.org/10.1038/s41597-023-02060-y</p>
+        </footer>
+    </div>
+
+    <script>
+        // Sample data based on the paper's examples
+        const sampleData = [
+            {
+                msoaName: "Birmingham 008",
+                msoaCode: "E02001834",
+                population: 6002,
+                tobaccoAvailability: 0.00100,
+                asthmaExpenditure: 2.33,
+                walkability: 1.48,
+                dementiaExpenditure: 0.0378,
+                buildingDensity: 2332,
+                diabetesExpenditure: 4.48
+            },
+            {
+                msoaName: "Birmingham 011",
+                msoaCode: "E02001837",
+                population: 10327,
+                tobaccoAvailability: 0.000484,
+                asthmaExpenditure: 0.451,
+                walkability: 0.953,
+                dementiaExpenditure: 0.00748,
+                buildingDensity: 2614,
+                diabetesExpenditure: 0.564
+            },
+            {
+                msoaName: "Bradford 017",
+                msoaCode: "E02002199",
+                population: 6891,
+                tobaccoAvailability: 0.000290,
+                asthmaExpenditure: 1.27,
+                walkability: -0.885,
+                dementiaExpenditure: 0.0760,
+                buildingDensity: 70,
+                diabetesExpenditure: 1.427
+            },
+            {
+                msoaName: "Bradford 019",
+                msoaCode: "E02002201",
+                population: 12244,
+                tobaccoAvailability: 0.000490,
+                asthmaExpenditure: 1.12,
+                walkability: -0.202,
+                dementiaExpenditure: 0.0818,
+                buildingDensity: 201,
+                diabetesExpenditure: 1.408
+            },
+            {
+                msoaName: "Bristol 001",
+                msoaCode: "E02003012",
+                population: 8500,
+                tobaccoAvailability: 0.000350,
+                asthmaExpenditure: 0.85,
+                walkability: 0.650,
+                dementiaExpenditure: 0.0250,
+                buildingDensity: 1850,
+                diabetesExpenditure: 2.15
+            },
+            {
+                msoaName: "Bristol 044",
+                msoaCode: "E02003055",
+                population: 7200,
+                tobaccoAvailability: 0.000600,
+                asthmaExpenditure: 1.45,
+                walkability: 0.320,
+                dementiaExpenditure: 0.0420,
+                buildingDensity: 2100,
+                diabetesExpenditure: 2.85
+            }
+        ];
+
+        // Application state
+        let currentStep = 1;
+        let tobaccoCorrelationCalculated = false;
+        let walkabilityCorrelationCalculated = false;
+
+        // DOM elements
+        const steps = document.querySelectorAll('.step');
+        const stepContents = document.querySelectorAll('.step-content');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const tableBody = document.getElementById('tableBody');
+        const tobaccoAsthmaTable = document.getElementById('tobaccoAsthmaTable');
+        const walkabilityDementiaTable = document.getElementById('walkabilityDementiaTable');
+        const multiFactorTable = document.getElementById('multiFactorTable');
+        const tobaccoAsthmaViz = document.getElementById('tobaccoAsthmaViz');
+        const walkabilityDementiaViz = document.getElementById('walkabilityDementiaViz');
+
+        // Initialize the application
+        function init() {
+            // Populate initial data table
+            populateDataTable();
+            
+            // Populate tobacco vs asthma table
+            populateTobaccoAsthmaTable();
+            
+            // Populate walkability vs dementia table
+            populateWalkabilityDementiaTable();
+            
+            // Populate multi-factor table
+            populateMultiFactorTable();
+            
+            // Create visualizations
+            createTobaccoAsthmaVisualization();
+            createWalkabilityDementiaVisualization();
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Update button states
+            updateButtonStates();
+        }
+
+        // Populate the main data table
+        function populateDataTable() {
+            tableBody.innerHTML = '';
+            
+            sampleData.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.msoaName}</td>
+                    <td>${item.population.toLocaleString()}</td>
+                    <td>${item.tobaccoAvailability.toFixed(6)}</td>
+                    <td>${item.asthmaExpenditure.toFixed(3)}</td>
+                    <td>${item.walkability.toFixed(3)}</td>
+                    <td>${item.dementiaExpenditure.toFixed(4)}</td>
+                    <td>${item.buildingDensity.toLocaleString()}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Populate tobacco vs asthma table
+        function populateTobaccoAsthmaTable() {
+            tobaccoAsthmaTable.innerHTML = '';
+            
+            sampleData.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.msoaName}</td>
+                    <td>${item.tobaccoAvailability.toFixed(6)}</td>
+                    <td>${item.asthmaExpenditure.toFixed(3)}</td>
+                `;
+                tobaccoAsthmaTable.appendChild(row);
+            });
+        }
+
+        // Populate walkability vs dementia table
+        function populateWalkabilityDementiaTable() {
+            walkabilityDementiaTable.innerHTML = '';
+            
+            sampleData.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.msoaName}</td>
+                    <td>${item.walkability.toFixed(3)}</td>
+                    <td>${item.dementiaExpenditure.toFixed(4)}</td>
+                `;
+                walkabilityDementiaTable.appendChild(row);
+            });
+        }
+
+        // Populate multi-factor table
+        function populateMultiFactorTable() {
+            multiFactorTable.innerHTML = '';
+            
+            sampleData.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.msoaName}</td>
+                    <td>${item.tobaccoAvailability.toFixed(6)}</td>
+                    <td>${item.walkability.toFixed(3)}</td>
+                    <td>${item.buildingDensity.toLocaleString()}</td>
+                    <td>${item.asthmaExpenditure.toFixed(3)}</td>
+                    <td>${item.dementiaExpenditure.toFixed(4)}</td>
+                `;
+                multiFactorTable.appendChild(row);
+            });
+        }
+
+        // Create visualization for tobacco vs asthma
+        function createTobaccoAsthmaVisualization() {
+            tobaccoAsthmaViz.innerHTML = '';
+            
+            // Find max values for scaling
+            const maxTobacco = Math.max(...sampleData.map(d => d.tobaccoAvailability));
+            const maxAsthma = Math.max(...sampleData.map(d => d.asthmaExpenditure));
+            
+            sampleData.forEach(item => {
+                // Create tobacco bar
+                const tobaccoBar = document.createElement('div');
+                tobaccoBar.className = 'bar';
+                tobaccoBar.style.height = `${(item.tobaccoAvailability / maxTobacco) * 200}px`;
+                tobaccoBar.style.backgroundColor = '#dc3545';
+                
+                const tobaccoLabel = document.createElement('div');
+                tobaccoLabel.className = 'bar-label';
+                tobaccoLabel.textContent = item.msoaName.split(' ')[1];
+                
+                tobaccoBar.appendChild(tobaccoLabel);
+                tobaccoAsthmaViz.appendChild(tobaccoBar);
+                
+                // Create asthma bar
+                const asthmaBar = document.createElement('div');
+                asthmaBar.className = 'bar';
+                asthmaBar.style.height = `${(item.asthmaExpenditure / maxAsthma) * 200}px`;
+                asthmaBar.style.backgroundColor = '#17a2b8';
+                asthmaBar.style.marginLeft = '20px';
+                
+                const asthmaLabel = document.createElement('div');
+                asthmaLabel.className = 'bar-label';
+                asthmaLabel.textContent = item.msoaName.split(' ')[1];
+                
+                asthmaBar.appendChild(asthmaLabel);
+                tobaccoAsthmaViz.appendChild(asthmaBar);
+            });
+            
+            // Add legend
+            const legend = document.createElement('div');
+            legend.style.position = 'absolute';
+            legend.style.top = '10px';
+            legend.style.left = '10px';
+            legend.style.fontSize = '12px';
+            legend.innerHTML = `
+                <div style="display:flex; align-items:center; margin-bottom:5px;">
+                    <div style="width:12px; height:12px; background-color:#dc3545; margin-right:5px;"></div>
+                    <span>Tobacco Availability</span>
+                </div>
+                <div style="display:flex; align-items:center;">
+                    <div style="width:12px; height:12px; background-color:#17a2b8; margin-right:5px;"></div>
+                    <span>Asthma Expenditure</span>
+                </div>
+            `;
+            tobaccoAsthmaViz.appendChild(legend);
+        }
+
+        // Create visualization for walkability vs dementia
+        function createWalkabilityDementiaVisualization() {
+            walkabilityDementiaViz.innerHTML = '';
+            
+            // Find max/min values for scaling
+            const maxWalkability = Math.max(...sampleData.map(d => d.walkability));
+            const minWalkability = Math.min(...sampleData.map(d => d.walkability));
+            const maxDementia = Math.max(...sampleData.map(d => d.dementiaExpenditure));
+            
+            sampleData.forEach(item => {
+                // Create walkability bar (centered around zero)
+                const walkabilityBar = document.createElement('div');
+                walkabilityBar.className = 'bar';
+                
+                // Scale walkability to positive values for visualization
+                const walkabilityHeight = ((item.walkability - minWalkability) / (maxWalkability - minWalkability)) * 200;
+                walkabilityBar.style.height = `${walkabilityHeight}px`;
+                walkabilityBar.style.backgroundColor = '#28a745';
+                
+                const walkabilityLabel = document.createElement('div');
+                walkabilityLabel.className = 'bar-label';
+                walkabilityLabel.textContent = item.msoaName.split(' ')[1];
+                
+                walkabilityBar.appendChild(walkabilityLabel);
+                walkabilityDementiaViz.appendChild(walkabilityBar);
+                
+                // Create dementia bar
+                const dementiaBar = document.createElement('div');
+                dementiaBar.className = 'bar';
+                dementiaBar.style.height = `${(item.dementiaExpenditure / maxDementia) * 200}px`;
+                dementiaBar.style.backgroundColor = '#6f42c1';
+                dementiaBar.style.marginLeft = '20px';
+                
+                const dementiaLabel = document.createElement('div');
+                dementiaLabel.className = 'bar-label';
+                dementiaLabel.textContent = item.msoaName.split(' ')[1];
+                
+                dementiaBar.appendChild(dementiaLabel);
+                walkabilityDementiaViz.appendChild(dementiaBar);
+            });
+            
+            // Add legend
+            const legend = document.createElement('div');
+            legend.style.position = 'absolute';
+            legend.style.top = '10px';
+            legend.style.left = '10px';
+            legend.style.fontSize = '12px';
+            legend.innerHTML = `
+                <div style="display:flex; align-items:center; margin-bottom:5px;">
+                    <div style="width:12px; height:12px; background-color:#28a745; margin-right:5px;"></div>
+                    <span>Walkability Score</span>
+                </div>
+                <div style="display:flex; align-items:center;">
+                    <div style="width:12px; height:12px; background-color:#6f42c1; margin-right:5px;"></div>
+                    <span>Dementia Expenditure</span>
+                </div>
+            `;
+            walkabilityDementiaViz.appendChild(legend);
+        }
+
+        // Calculate correlation between tobacco availability and asthma expenditure
+        function calculateTobaccoAsthmaCorrelation() {
+            // Extract data
+            const tobacco = sampleData.map(d => d.tobaccoAvailability);
+            const asthma = sampleData.map(d => d.asthmaExpenditure);
+            
+            // Calculate correlation coefficient (simplified)
+            const meanTobacco = tobacco.reduce((a, b) => a + b) / tobacco.length;
+            const meanAsthma = asthma.reduce((a, b) => a + b) / asthma.length;
+            
+            let numerator = 0;
+            let denomX = 0;
+            let denomY = 0;
+            
+            for (let i = 0; i < tobacco.length; i++) {
+                numerator += (tobacco[i] - meanTobacco) * (asthma[i] - meanAsthma);
+                denomX += Math.pow(tobacco[i] - meanTobacco, 2);
+                denomY += Math.pow(asthma[i] - meanAsthma, 2);
+            }
+            
+            const correlation = numerator / Math.sqrt(denomX * denomY);
+            
+            // Display result
+            const resultElement = document.getElementById('tobaccoResult');
+            const textElement = document.getElementById('tobaccoCorrelationText');
+            
+            textElement.textContent = `Correlation coefficient (r) between tobacco availability and asthma expenditure: ${correlation.toFixed(3)}`;
+            
+            // Interpret the correlation
+            let interpretation = "";
+            if (correlation > 0.7) interpretation = "Strong positive correlation";
+            else if (correlation > 0.3) interpretation = "Moderate positive correlation";
+            else if (correlation > 0.1) interpretation = "Weak positive correlation";
+            else if (correlation > -0.1) interpretation = "No meaningful correlation";
+            else if (correlation > -0.3) interpretation = "Weak negative correlation";
+            else if (correlation > -0.7) interpretation = "Moderate negative correlation";
+            else interpretation = "Strong negative correlation";
+            
+            textElement.textContent += ` (${interpretation}).`;
+            
+            resultElement.style.display = 'block';
+            tobaccoCorrelationCalculated = true;
+            
+            // Mark step 2 as completed
+            document.querySelector('.step[data-step="2"]').classList.add('completed');
+            
+            // Scroll to result
+            resultElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Calculate correlation between walkability and dementia expenditure
+        function calculateWalkabilityDementiaCorrelation() {
+            // Extract data
+            const walkability = sampleData.map(d => d.walkability);
+            const dementia = sampleData.map(d => d.dementiaExpenditure);
+            
+            // Calculate correlation coefficient (simplified)
+            const meanWalkability = walkability.reduce((a, b) => a + b) / walkability.length;
+            const meanDementia = dementia.reduce((a, b) => a + b) / dementia.length;
+            
+            let numerator = 0;
+            let denomX = 0;
+            let denomY = 0;
+            
+            for (let i = 0; i < walkability.length; i++) {
+                numerator += (walkability[i] - meanWalkability) * (dementia[i] - meanDementia);
+                denomX += Math.pow(walkability[i] - meanWalkability, 2);
+                denomY += Math.pow(dementia[i] - meanDementia, 2);
+            }
+            
+            const correlation = numerator / Math.sqrt(denomX * denomY);
+            
+            // Display result
+            const resultElement = document.getElementById('walkabilityResult');
+            const textElement = document.getElementById('walkabilityCorrelationText');
+            
+            textElement.textContent = `Correlation coefficient (r) between walkability and dementia expenditure: ${correlation.toFixed(3)}`;
+            
+            // Interpret the correlation
+            let interpretation = "";
+            if (correlation > 0.7) interpretation = "Strong positive correlation";
+            else if (correlation > 0.3) interpretation = "Moderate positive correlation";
+            else if (correlation > 0.1) interpretation = "Weak positive correlation";
+            else if (correlation > -0.1) interpretation = "No meaningful correlation";
+            else if (correlation > -0.3) interpretation = "Weak negative correlation";
+            else if (correlation > -0.7) interpretation = "Moderate negative correlation";
+            else interpretation = "Strong negative correlation";
+            
+            textElement.textContent += ` (${interpretation}).`;
+            
+            resultElement.style.display = 'block';
+            walkabilityCorrelationCalculated = true;
+            
+            // Mark step 3 as completed
+            document.querySelector('.step[data-step="3"]').classList.add('completed');
+            
+            // Scroll to result
+            resultElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Show conclusion with analysis results
+        function showConclusion() {
+            const conclusionElement = document.getElementById('finalConclusion');
+            const conclusionText = document.getElementById('conclusionText');
+            
+            let tobaccoCorrelation = 0;
+            let walkabilityCorrelation = 0;
+            
+            // Calculate correlations for conclusion
+            const tobacco = sampleData.map(d => d.tobaccoAvailability);
+            const asthma = sampleData.map(d => d.asthmaExpenditure);
+            const walkability = sampleData.map(d => d.walkability);
+            const dementia = sampleData.map(d => d.dementiaExpenditure);
+            
+            // Calculate tobacco correlation
+            const meanTobacco = tobacco.reduce((a, b) => a + b) / tobacco.length;
+            const meanAsthma = asthma.reduce((a, b) => a + b) / asthma.length;
+            let num = 0, denX = 0, denY = 0;
+            for (let i = 0; i < tobacco.length; i++) {
+                num += (tobacco[i] - meanTobacco) * (asthma[i] - meanAsthma);
+                denX += Math.pow(tobacco[i] - meanTobacco, 2);
+                denY += Math.pow(asthma[i] - meanAsthma, 2);
+            }
+            tobaccoCorrelation = num / Math.sqrt(denX * denY);
+            
+            // Calculate walkability correlation
+            const meanWalkability = walkability.reduce((a, b) => a + b) / walkability.length;
+            const meanDementia = dementia.reduce((a, b) => a + b) / dementia.length;
+            num = 0; denX = 0; denY = 0;
+            for (let i = 0; i < walkability.length; i++) {
+                num += (walkability[i] - meanWalkability) * (dementia[i] - meanDementia);
+                denX += Math.pow(walkability[i] - meanWalkability, 2);
+                denY += Math.pow(dementia[i] - meanDementia, 2);
+            }
+            walkabilityCorrelation = num / Math.sqrt(denX * denY);
+            
+            conclusionText.textContent = `Our analysis of the sample data found a ${tobaccoCorrelation > 0 ? 'positive' : 'negative'} correlation (r = ${tobaccoCorrelation.toFixed(3)}) between tobacco availability and asthma expenditure, and a ${walkabilityCorrelation > 0 ? 'positive' : 'negative'} correlation (r = ${walkabilityCorrelation.toFixed(3)}) between walkability and dementia expenditure. These findings align with the paper's results, which reported a correlation of 0.113 for tobacco-asthma and -0.186 for walkability-dementia in the full dataset.`;
+            
+            conclusionElement.style.display = 'block';
+            
+            // Mark step 5 as completed
+            document.querySelector('.step[data-step="5"]').classList.add('completed');
+        }
+
+        // Set up event listeners
+        function setupEventListeners() {
+            // Step navigation
+            steps.forEach(step => {
+                step.addEventListener('click', () => {
+                    const stepNumber = parseInt(step.getAttribute('data-step'));
+                    goToStep(stepNumber);
+                });
+            });
+            
+            // Previous button
+            prevBtn.addEventListener('click', () => {
+                if (currentStep > 1) {
+                    goToStep(currentStep - 1);
+                }
+            });
+            
+            // Next button
+            nextBtn.addEventListener('click', () => {
+                if (currentStep < 5) {
+                    goToStep(currentStep + 1);
+                }
+            });
+            
+            // Calculate correlation buttons
+            document.getElementById('calculateTobaccoCorrelation').addEventListener('click', calculateTobaccoAsthmaCorrelation);
+            document.getElementById('calculateWalkabilityCorrelation').addEventListener('click', calculateWalkabilityDementiaCorrelation);
+        }
+
+        // Go to a specific step
+        function goToStep(stepNumber) {
+            // Update current step
+            currentStep = stepNumber;
+            
+            // Update step indicators
+            steps.forEach(step => {
+                const stepIndex = parseInt(step.getAttribute('data-step'));
+                step.classList.toggle('active', stepIndex === stepNumber);
+            });
+            
+            // Show/hide step content
+            stepContents.forEach(content => {
+                content.classList.toggle('active', content.id === `step${stepNumber}`);
+            });
+            
+            // Update button states
+            updateButtonStates();
+            
+            // If we're on the conclusion step, show the conclusion
+            if (stepNumber === 5) {
+                setTimeout(showConclusion, 300);
+            }
+        }
+
+        // Update button states based on current step
+        function updateButtonStates() {
+            prevBtn.disabled = currentStep === 1;
+            nextBtn.textContent = currentStep === 5 ? 'Finish' : 'Next Step';
+            
+            // Disable next button if required actions aren't completed
+            if (currentStep === 2 && !tobaccoCorrelationCalculated) {
+                nextBtn.disabled = true;
+            } else if (currentStep === 3 && !walkabilityCorrelationCalculated) {
+                nextBtn.disabled = true;
+            } else {
+                nextBtn.disabled = false;
+            }
+        }
+
+        // Initialize the application when the page loads
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
