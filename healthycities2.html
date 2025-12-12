@@ -1,0 +1,806 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Guided Data Analysis — Healthy Cities (Exemplar)</title>
+
+  <!-- Tabulator (spreadsheet-like grid) -->
+  <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
+
+  <!-- Plotly (simple charts) -->
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+
+  <style>
+    :root { color-scheme: light; }
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
+    header { padding: 14px 16px; border-bottom: 1px solid #e5e7eb; display:flex; gap:12px; align-items:center; }
+    header h1 { font-size: 16px; margin: 0; font-weight: 700; }
+    header .sub { color:#6b7280; font-size: 12px; }
+
+    main { display:grid; grid-template-columns: 390px 1fr; height: calc(100vh - 56px); }
+    aside { border-right:1px solid #e5e7eb; padding: 14px; overflow:auto; }
+    section { padding: 14px; overflow:auto; }
+
+    .card { border:1px solid #e5e7eb; border-radius: 12px; padding: 12px; margin-bottom: 12px; box-shadow: 0 1px 0 rgba(0,0,0,.02); background:#fff; }
+    .steps { display:flex; flex-direction:column; gap:8px; }
+    .step { border:1px solid #e5e7eb; border-radius: 12px; padding: 10px; cursor:pointer; background:#fff; }
+    .step.active { border-color:#111827; box-shadow: 0 0 0 2px rgba(17,24,39,.08); }
+    .step .t { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+    .step .d { color:#6b7280; font-size: 12px; line-height: 1.35; }
+
+    .row { display:flex; gap:8px; flex-wrap: wrap; align-items:center; }
+    label { font-size: 12px; color:#374151; }
+    select, button, input[type="text"] {
+      font: inherit; font-size: 12px;
+      border:1px solid #d1d5db; border-radius: 10px; padding: 8px 10px; background:#fff;
+    }
+    button { cursor:pointer; }
+    button.primary { background:#111827; color:white; border-color:#111827; }
+    button:disabled { opacity:.5; cursor:not-allowed; }
+
+    .muted { color:#6b7280; font-size: 12px; line-height: 1.45; }
+    .warn { background:#fff7ed; border:1px solid #fed7aa; padding: 10px; border-radius: 12px; color:#9a3412; font-size: 12px; }
+    .ok { background:#f0fdf4; border:1px solid #bbf7d0; padding: 10px; border-radius: 12px; color:#166534; font-size: 12px; }
+
+    code.inline { background:#f3f4f6; padding: 2px 6px; border-radius: 8px; }
+
+    #grid { height: 430px; border:1px solid #e5e7eb; border-radius: 12px; overflow:hidden; }
+    #chart { height: 360px; border:1px solid #e5e7eb; border-radius: 12px; }
+
+    .kpi { display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
+    .kpi > div { border:1px solid #e5e7eb; border-radius: 12px; padding: 10px; }
+    .kpi .v { font-size: 18px; font-weight: 800; }
+    .kpi .l { font-size: 11px; color:#6b7280; }
+
+    .split { display:grid; grid-template-columns: 1.2fr .8fr; gap:12px; }
+    ul { margin: 8px 0 0 18px; }
+    ol { margin: 8px 0 0 18px; }
+
+    @media (max-width: 980px){
+      main{ grid-template-columns: 1fr; }
+      aside{ border-right:none; border-bottom:1px solid #e5e7eb; }
+      .split{ grid-template-columns: 1fr; }
+      #grid{ height: 360px; }
+      #chart{ height: 320px; }
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <h1>Guided Data Analysis (Beginner-Friendly) — Healthy Cities Exemplar</h1>
+  <div class="sub">A tiny embedded dataset + step-by-step “what/why/questions to ask” walkthrough</div>
+</header>
+
+<main>
+  <aside>
+    <div class="card">
+      <div style="font-weight:800; font-size:13px;">What you’re looking at</div>
+      <div class="muted" style="margin-top:8px;">
+        This app uses a <b>small example dataset</b> that mimics how “real” city datasets are often stored:
+        as a <b>long table</b> where each row is one measurement.
+        <br/><br/>
+        You don’t need any prior data knowledge. The steps teach:
+        <b>what to do</b>, <b>why it matters</b>, and <b>what questions to ask</b>.
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:800; font-size:13px; margin-bottom:8px;">Guided steps</div>
+      <div class="steps" id="steps"></div>
+      <div class="row" style="margin-top:10px;">
+        <button id="btnPrev">← Prev</button>
+        <button id="btnNext" class="primary">Next →</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:800; font-size:13px; margin-bottom:8px;">Simple controls</div>
+
+      <div class="row" style="margin-bottom:8px;">
+        <label>View</label>
+        <select id="viewSelect">
+          <option value="long">Long table (raw)</option>
+          <option value="wide">Wide table (pivoted)</option>
+        </select>
+      </div>
+
+      <div class="row" style="margin-bottom:8px;">
+        <label>City</label>
+        <select id="citySelect"></select>
+      </div>
+
+      <div class="row" style="margin-bottom:8px;">
+        <label>Quick filter</label>
+        <input id="quickFilter" type="text" placeholder="type to search any field..." />
+      </div>
+
+      <div class="row">
+        <button id="btnReset">Reset filters</button>
+        <button id="btnPivot" class="primary">Build wide table</button>
+      </div>
+
+      <div class="muted" style="margin-top:10px;">
+        You can also use column header filters in the spreadsheet.
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:800; font-size:13px;">Mini “experiment”</div>
+      <div class="muted" style="margin-top:6px;">
+        Once you build the wide table, you’ll run a simple check:
+        <br/>• <b>Tobacco availability</b> vs <b>Asthma expenditure</b>
+        <br/>to practice turning a question into an analysis.
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <button id="btnRunExp" disabled>Run correlation</button>
+      </div>
+    </div>
+  </aside>
+
+  <section>
+    <div class="card">
+      <div id="stepTitle" style="font-weight:900; font-size:14px;"></div>
+      <div id="stepBody" class="muted" style="margin-top:6px;"></div>
+      <div id="stepBox" style="margin-top:10px;"></div>
+    </div>
+
+    <div class="split">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:10px;">
+          <div>
+            <div style="font-weight:900; font-size:13px;">Spreadsheet</div>
+            <div class="muted" id="gridCaption">Long table view (raw measurements).</div>
+          </div>
+        </div>
+        <div style="margin-top:10px;" id="grid"></div>
+      </div>
+
+      <div>
+        <div class="card">
+          <div style="font-weight:900; font-size:13px;">Chart / results</div>
+          <div class="muted" id="chartCaption" style="margin-top:6px;">Follow the steps; charts appear when relevant.</div>
+          <div id="chart" style="margin-top:10px;"></div>
+        </div>
+
+        <div class="card">
+          <div style="font-weight:900; font-size:13px; margin-bottom:8px;">Quick checks</div>
+          <div class="kpi">
+            <div><div class="v" id="kpiRows">—</div><div class="l">Rows shown</div></div>
+            <div><div class="v" id="kpiGroups">—</div><div class="l">Distinct MSOAs</div></div>
+          </div>
+          <div class="muted" style="margin-top:8px;" id="kpiNote">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:900; font-size:13px;">Cheat sheet: Long vs Wide tables</div>
+      <div class="muted" style="margin-top:8px;">
+        <b>Long table</b> (raw): many rows per area, because each metric and time period is a separate row.
+        <br/>
+        <b>Wide table</b> (analysis-ready): one row per area (MSOA) with separate columns for the metrics you want.
+        <br/><br/>
+        Analysts often switch between them: long for storage + flexibility, wide for analysis.
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+/* -----------------------------
+   Embedded exemplar dataset
+   -----------------------------
+   This mimics a “Healthy Cities” style long table:
+   - One row = one measurement
+   - Categories describe what the measurement is
+   - City/MSOA identify where it is
+   - Time identifies when it is (or "None" if not a time series)
+*/
+const EXEMPLAR_LONG = [
+  // City: Riverside
+  {TopCategory:"EnvironmentalDeterminants", SecondCategory:"BuiltEnvironment", ThirdCategory:"TobaccoAvailability", CityName:"Riverside", MSOACode:"RV01", MSOAName:"Riverside Central", Time:"None", Key:"value", Value:"0.38"},
+  {TopCategory:"EnvironmentalDeterminants", SecondCategory:"BuiltEnvironment", ThirdCategory:"Walkability",        CityName:"Riverside", MSOACode:"RV01", MSOAName:"Riverside Central", Time:"None", Key:"value", Value:"72"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure", CityName:"Riverside", MSOACode:"RV01", MSOAName:"Riverside Central", Time:"2023-01", Key:"£/citizen", Value:"21.0"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure", CityName:"Riverside", MSOACode:"RV01", MSOAName:"Riverside Central", Time:"2023-02", Key:"£/citizen", Value:"23.4"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure", CityName:"Riverside", MSOACode:"RV01", MSOAName:"Riverside Central", Time:"2023-03", Key:"£/citizen", Value:"22.2"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure", CityName:"Riverside", MSOACode:"RV01", MSOAName:"Riverside Central", Time:"2023-01", Key:"£/citizen", Value:"31.1"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure", CityName:"Riverside", MSOACode:"RV01", MSOAName:"Riverside Central", Time:"2023-02", Key:"£/citizen", Value:"30.6"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure", CityName:"Riverside", MSOACode:"RV01", MSOAName:"Riverside Central", Time:"2023-03", Key:"£/citizen", Value:"30.9"},
+
+  {TopCategory:"EnvironmentalDeterminants", SecondCategory:"BuiltEnvironment", ThirdCategory:"TobaccoAvailability", CityName:"Riverside", MSOACode:"RV02", MSOAName:"Riverside North",   Time:"None", Key:"value", Value:"0.22"},
+  {TopCategory:"EnvironmentalDeterminants", SecondCategory:"BuiltEnvironment", ThirdCategory:"Walkability",        CityName:"Riverside", MSOACode:"RV02", MSOAName:"Riverside North",   Time:"None", Key:"value", Value:"64"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Riverside", MSOACode:"RV02", MSOAName:"Riverside North",   Time:"2023-01", Key:"£/citizen", Value:"16.4"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Riverside", MSOACode:"RV02", MSOAName:"Riverside North",   Time:"2023-02", Key:"£/citizen", Value:"15.8"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Riverside", MSOACode:"RV02", MSOAName:"Riverside North",   Time:"2023-03", Key:"£/citizen", Value:"17.1"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure", CityName:"Riverside", MSOACode:"RV02", MSOAName:"Riverside North",  Time:"2023-01", Key:"£/citizen", Value:"34.8"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure", CityName:"Riverside", MSOACode:"RV02", MSOAName:"Riverside North",  Time:"2023-02", Key:"£/citizen", Value:"35.2"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure", CityName:"Riverside", MSOACode:"RV02", MSOAName:"Riverside North",  Time:"2023-03", Key:"£/citizen", Value:"34.5"},
+
+  // City: Hillford
+  {TopCategory:"EnvironmentalDeterminants", SecondCategory:"BuiltEnvironment", ThirdCategory:"TobaccoAvailability", CityName:"Hillford", MSOACode:"HF01", MSOAName:"Hillford East", Time:"None", Key:"value", Value:"0.44"},
+  {TopCategory:"EnvironmentalDeterminants", SecondCategory:"BuiltEnvironment", ThirdCategory:"Walkability",        CityName:"Hillford", MSOACode:"HF01", MSOAName:"Hillford East", Time:"None", Key:"value", Value:"51"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Hillford", MSOACode:"HF01", MSOAName:"Hillford East", Time:"2023-01", Key:"£/citizen", Value:"27.5"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Hillford", MSOACode:"HF01", MSOAName:"Hillford East", Time:"2023-02", Key:"£/citizen", Value:"26.9"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Hillford", MSOACode:"HF01", MSOAName:"Hillford East", Time:"2023-03", Key:"£/citizen", Value:"28.1"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure", CityName:"Hillford", MSOACode:"HF01", MSOAName:"Hillford East", Time:"2023-01", Key:"£/citizen", Value:"39.0"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure", CityName:"Hillford", MSOACode:"HF01", MSOAName:"Hillford East", Time:"2023-02", Key:"£/citizen", Value:"38.6"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure", CityName:"Hillford", MSOACode:"HF01", MSOAName:"Hillford East", Time:"2023-03", Key:"£/citizen", Value:"39.4"},
+
+  {TopCategory:"EnvironmentalDeterminants", SecondCategory:"BuiltEnvironment", ThirdCategory:"TobaccoAvailability", CityName:"Hillford", MSOACode:"HF02", MSOAName:"Hillford West", Time:"None", Key:"value", Value:"0.18"},
+  {TopCategory:"EnvironmentalDeterminants", SecondCategory:"BuiltEnvironment", ThirdCategory:"Walkability",        CityName:"Hillford", MSOACode:"HF02", MSOAName:"Hillford West", Time:"None", Key:"value", Value:"78"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Hillford", MSOACode:"HF02", MSOAName:"Hillford West", Time:"2023-01", Key:"£/citizen", Value:"14.2"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Hillford", MSOACode:"HF02", MSOAName:"Hillford West", Time:"2023-02", Key:"£/citizen", Value:"13.7"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Hillford", MSOACode:"HF02", MSOAName:"Hillford West", Time:"2023-03", Key:"£/citizen", Value:"14.9"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure", CityName:"Hillford", MSOACode:"HF02", MSOAName:"Hillford West", Time:"2023-01", Key:"£/citizen", Value:"28.7"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure", CityName:"Hillford", MSOACode:"HF02", MSOAName:"Hillford West", Time:"2023-02", Key:"£/citizen", Value:"28.1"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure", CityName:"Hillford", MSOACode:"HF02", MSOAName:"Hillford West", Time:"2023-03", Key:"£/citizen", Value:"28.9"},
+];
+
+const state = {
+  longRows: structuredClone(EXEMPLAR_LONG),
+  wideRows: null,
+  view: "long",
+  city: "All cities",
+  stepIndex: 0,
+  grid: null,
+};
+
+const el = (id) => document.getElementById(id);
+
+const steps = [
+  {
+    title: "1) Start with a question",
+    desc: "Before touching the data: what are you trying to learn?",
+    render() {
+      setStep(
+        "Start with a question (the most important step)",
+        `
+        Data analysis is <b>not</b> “make charts until something looks interesting”.
+        You begin with a question you care about.
+        <br/><br/>
+        <b>Examples:</b>
+        <ul>
+          <li>Do areas with more tobacco outlets have higher asthma costs?</li>
+          <li>Does walkability relate to dementia-related costs?</li>
+          <li>Which MSOAs are outliers and deserve a closer look?</li>
+        </ul>
+        <br/>
+        <b>Why this matters:</b> A clear question tells you:
+        what columns you need, what should be grouped, and what “success” looks like.
+        `,
+        tipBox(`
+          Try this now: use the spreadsheet and find the columns
+          <code class="inline">ThirdCategory</code>, <code class="inline">Time</code>, <code class="inline">Value</code>.
+          Ask: “What does one row represent?”
+        `)
+      );
+      showLong();
+    }
+  },
+  {
+    title: "2) Understand what a row means",
+    desc: "Learn the long-table format: one row = one measurement.",
+    render() {
+      setStep(
+        "Understand the ‘long table’ (raw format)",
+        `
+        In this dataset, each row is <b>one measurement</b>.
+        It answers: “<i>What was measured? Where? When? What value?</i>”
+        <br/><br/>
+        <b>Read a row like a sentence:</b>
+        <ul>
+          <li><b>CityName</b> + <b>MSOACode</b> = where</li>
+          <li><b>ThirdCategory</b> = what indicator (e.g., TobaccoAvailability)</li>
+          <li><b>Time</b> = when (or <code class="inline">None</code> if it’s not a time series)</li>
+          <li><b>Value</b> = the number you analyze</li>
+        </ul>
+        <br/>
+        <b>Question to ask:</b> “Which indicators change over time, and which don’t?”
+        `,
+        okBox(`
+          Look for rows where <code class="inline">Time</code> is “None”.
+          Those are indicators that don’t vary over time in this example (like Walkability).
+        `)
+      );
+      showLong();
+    }
+  },
+  {
+    title: "3) Do basic sanity checks",
+    desc: "Check missing values, duplicates, and units.",
+    render() {
+      setStep(
+        "Sanity checks (to avoid bad conclusions)",
+        `
+        Before analysis, do quick checks:
+        <ol>
+          <li><b>Missing values:</b> Are any Values blank or non-numeric?</li>
+          <li><b>Duplicates:</b> Do you have the same MSOA, indicator, and time twice?</li>
+          <li><b>Units:</b> What does <code class="inline">Key</code> mean (e.g., £/citizen)?</li>
+        </ol>
+        <br/>
+        <b>Why this matters:</b> Correlations and averages can become nonsense if:
+        you mix units, include duplicates, or treat strings as numbers.
+        `,
+        tipBox(`
+          Try filtering <code class="inline">ThirdCategory</code> to “AsthmaExpenditure”.
+          Then sort by <code class="inline">Time</code>.
+          Ask: “Do I have one value per MSOA per month?”
+        `)
+      );
+      showLong();
+    }
+  },
+  {
+    title: "4) Filter to a scope",
+    desc: "Decide what subset you’re analyzing (city, time range).",
+    render() {
+      setStep(
+        "Choose your analysis scope",
+        `
+        Real datasets are huge, so you usually choose a scope:
+        <ul>
+          <li><b>Which city?</b> (or all cities)</li>
+          <li><b>Which time period?</b> (here we have 2023-01 to 2023-03 for expenditures)</li>
+          <li><b>Which indicators?</b> (for your question)</li>
+        </ul>
+        <br/>
+        <b>Why this matters:</b> If you change scope, your results can change.
+        Always write down your scope so you can reproduce your work later.
+        `,
+        tipBox(`
+          Use the <b>City</b> dropdown. Watch how the spreadsheet changes.
+          Ask: “Am I comparing areas within one city, or mixing cities?”
+        `)
+      );
+      showLong();
+    }
+  },
+  {
+    title: "5) Pivot to a wide table",
+    desc: "Turn ‘many rows per MSOA’ into ‘one row per MSOA’ for analysis.",
+    render() {
+      setStep(
+        "Make an analysis-ready ‘wide table’ (pivot)",
+        `
+        To compare two variables (like tobacco vs asthma), you need them side-by-side.
+        That’s easier in a <b>wide table</b> where each MSOA has one row.
+        <br/><br/>
+        This app will build a wide table with:
+        <ul>
+          <li><b>TobaccoAvailability</b> (single value)</li>
+          <li><b>Walkability</b> (single value)</li>
+          <li><b>AsthmaExpenditure_mean</b> (average across months)</li>
+          <li><b>DementiaExpenditure_mean</b> (average across months)</li>
+        </ul>
+        <br/>
+        <b>Question to ask:</b> “How should time-series values be reduced?”
+        (mean, median, last month, a particular year, etc.)
+        `,
+        okBox(`Click <b>Build wide table</b> to pivot. Then switch the view to “Wide table (pivoted)”.`)
+      );
+      showLong(); // stay long until user pivots
+    }
+  },
+  {
+    title: "6) Run a simple experiment",
+    desc: "Turn your question into a scatter plot and correlation.",
+    render() {
+      setStep(
+        "Experiment: tobacco availability vs asthma expenditure",
+        `
+        Now we practice a basic workflow:
+        <ol>
+          <li><b>Define x</b>: TobaccoAvailability</li>
+          <li><b>Define y</b>: AsthmaExpenditure_mean</li>
+          <li><b>Make a scatter plot</b> (each dot is an MSOA)</li>
+          <li><b>Compute Pearson correlation</b> (a quick measure of association)</li>
+        </ol>
+        <br/>
+        <b>Important questions to ask:</b>
+        <ul>
+          <li>Does correlation imply causation? (No.)</li>
+          <li>Are there outliers driving the result?</li>
+          <li>Do we need controls (income, age, pollution) before interpreting?</li>
+        </ul>
+        `,
+        tipBox(`Build the wide table first, then click <b>Run correlation</b>. Try it for one city vs all cities.`)
+      );
+      showWideIfReady();
+    }
+  },
+  {
+    title: "7) Interpret + write down conclusions",
+    desc: "Explain what you found and what you’d do next.",
+    render() {
+      setStep(
+        "Interpretation (what a good analysis looks like)",
+        `
+        A good conclusion includes:
+        <ul>
+          <li><b>What you did:</b> “We aggregated asthma expenditure over 3 months per MSOA…”</li>
+          <li><b>What you found:</b> “We observed a positive/negative association…”</li>
+          <li><b>Limitations:</b> sample size, missing variables, confounding factors</li>
+          <li><b>Next steps:</b> stratify by city, add controls, test robustness</li>
+        </ul>
+        <br/>
+        <b>Why this matters:</b> Analysis is only useful if someone else can understand,
+        reproduce, and challenge it.
+        `,
+        okBox(`Try: change the city scope and re-run correlation. If the sign or strength changes, write down why.`)
+      );
+      showWideIfReady();
+    }
+  }
+];
+
+/* -----------------------------
+   Helpers
+   ----------------------------- */
+function setStep(title, bodyHtml, boxHtml) {
+  el("stepTitle").textContent = title;
+  el("stepBody").innerHTML = bodyHtml;
+  el("stepBox").innerHTML = boxHtml || "";
+}
+
+function tipBox(html){ return `<div class="warn"><b>Try this:</b> ${html}</div>`; }
+function okBox(html){ return `<div class="ok"><b>Good to know:</b> ${html}</div>`; }
+
+function toNum(x) {
+  const n = Number(String(x ?? "").trim());
+  return Number.isFinite(n) ? n : NaN;
+}
+
+function mean(arr) {
+  let s=0,c=0;
+  for (const v of arr) if (Number.isFinite(v)) { s+=v; c++; }
+  return c ? s/c : NaN;
+}
+
+function pearson(xs, ys) {
+  const pts = [];
+  for (let i=0;i<xs.length;i++){
+    const x=xs[i], y=ys[i];
+    if (Number.isFinite(x) && Number.isFinite(y)) pts.push([x,y]);
+  }
+  const n = pts.length;
+  if (n < 3) return {r: NaN, n};
+
+  let sx=0, sy=0;
+  for (const [x,y] of pts){ sx+=x; sy+=y; }
+  const mx=sx/n, my=sy/n;
+
+  let num=0, dx=0, dy=0;
+  for (const [x,y] of pts){
+    const vx=x-mx, vy=y-my;
+    num += vx*vy;
+    dx  += vx*vx;
+    dy  += vy*vy;
+  }
+  const den = Math.sqrt(dx*dy);
+  return { r: den ? num/den : NaN, n };
+}
+
+/* -----------------------------
+   Grid + filtering
+   ----------------------------- */
+function initGrid() {
+  if (state.grid) return;
+
+  state.grid = new Tabulator("#grid", {
+    height: "430px",
+    layout: "fitDataStretch",
+    placeholder: "No data.",
+    movableColumns: true,
+    pagination: true,
+    paginationSize: 20,
+    paginationSizeSelector: [20, 50, 100],
+    columns: longColumns(),
+    dataFiltered: updateKPIs,
+    dataLoaded: updateKPIs,
+    dataSorted: updateKPIs,
+  });
+}
+
+function longColumns() {
+  return [
+    { title: "TopCategory", field: "TopCategory", headerFilter: true, widthGrow: 2 },
+    { title: "SecondCategory", field: "SecondCategory", headerFilter: true, widthGrow: 2 },
+    { title: "ThirdCategory", field: "ThirdCategory", headerFilter: true, widthGrow: 2 },
+    { title: "CityName", field: "CityName", headerFilter: true, widthGrow: 2 },
+    { title: "MSOAName", field: "MSOAName", headerFilter: true, widthGrow: 2 },
+    { title: "MSOACode", field: "MSOACode", headerFilter: true, widthGrow: 1 },
+    { title: "Time", field: "Time", headerFilter: true, widthGrow: 1 },
+    { title: "Key", field: "Key", headerFilter: true, widthGrow: 1 },
+    { title: "Value", field: "Value", headerFilter: true, widthGrow: 1 },
+  ];
+}
+
+function wideColumns() {
+  return [
+    { title: "CityName", field: "CityName", headerFilter: true, widthGrow: 2 },
+    { title: "MSOAName", field: "MSOAName", headerFilter: true, widthGrow: 2 },
+    { title: "MSOACode", field: "MSOACode", headerFilter: true, widthGrow: 1 },
+    { title: "TobaccoAvailability", field: "TobaccoAvailability", sorter:"number", hozAlign:"right", widthGrow: 1 },
+    { title: "Walkability", field: "Walkability", sorter:"number", hozAlign:"right", widthGrow: 1 },
+    { title: "AsthmaExpenditure_mean", field: "AsthmaExpenditure_mean", sorter:"number", hozAlign:"right", widthGrow: 1 },
+    { title: "DementiaExpenditure_mean", field: "DementiaExpenditure_mean", sorter:"number", hozAlign:"right", widthGrow: 1 },
+    { title: "Asthma_nMonths", field: "Asthma_nMonths", sorter:"number", hozAlign:"right", widthGrow: 1 },
+    { title: "Dementia_nMonths", field: "Dementia_nMonths", sorter:"number", hozAlign:"right", widthGrow: 1 },
+  ];
+}
+
+function applyCityFilter(rows) {
+  const city = el("citySelect").value;
+  state.city = city;
+  if (city === "All cities") return rows;
+  return rows.filter(r => r.CityName === city);
+}
+
+function applyQuickFilterToGrid() {
+  const q = el("quickFilter").value.trim().toLowerCase();
+  if (!q) {
+    state.grid.clearFilter(true);
+    updateKPIs();
+    return;
+  }
+  state.grid.setFilter((data) => {
+    return Object.values(data).some(v => String(v ?? "").toLowerCase().includes(q));
+  });
+  updateKPIs();
+}
+
+function resetAllFilters() {
+  el("quickFilter").value = "";
+  state.grid.clearFilter(true);
+  state.grid.clearHeaderFilter();
+  updateKPIs();
+}
+
+/* -----------------------------
+   Views
+   ----------------------------- */
+function showLong() {
+  state.view = "long";
+  el("viewSelect").value = "long";
+  el("gridCaption").textContent = "Long table view (raw measurements).";
+  state.grid.setColumns(longColumns());
+  const rows = applyCityFilter(state.longRows);
+  state.grid.setData(rows);
+  el("btnRunExp").disabled = true;
+  clearChart("In long-table view. Build the wide table to run the experiment.");
+}
+
+function showWideIfReady() {
+  if (!state.wideRows) {
+    // stay in long view and guide user
+    clearChart("Build the wide table first (click “Build wide table”).");
+    return;
+  }
+  showWide();
+}
+
+function showWide() {
+  state.view = "wide";
+  el("viewSelect").value = "wide";
+  el("gridCaption").textContent = "Wide table view (pivoted, analysis-ready).";
+  state.grid.setColumns(wideColumns());
+  const rows = applyCityFilter(state.wideRows);
+  state.grid.setData(rows);
+  el("btnRunExp").disabled = false;
+  clearChart("Wide table ready. Click “Run correlation” to create a chart.");
+}
+
+/* -----------------------------
+   Pivot (long -> wide)
+   ----------------------------- */
+function buildWideTable() {
+  const base = applyCityFilter(state.longRows); // respect current city when building
+  const byMSOA = new Map();
+
+  function ensure(r) {
+    const key = r.MSOACode;
+    if (!byMSOA.has(key)) byMSOA.set(key, {
+      CityName: r.CityName,
+      MSOAName: r.MSOAName,
+      MSOACode: r.MSOACode,
+      TobaccoAvailability: NaN,
+      Walkability: NaN,
+      AsthmaExpenditure_mean: NaN,
+      DementiaExpenditure_mean: NaN,
+      Asthma_nMonths: 0,
+      Dementia_nMonths: 0,
+      _asthma: [],
+      _dementia: [],
+    });
+    return byMSOA.get(key);
+  }
+
+  for (const r of base) {
+    if (!r.MSOACode) continue;
+    const row = ensure(r);
+
+    if (r.ThirdCategory === "TobaccoAvailability" && r.Time === "None") {
+      const v = toNum(r.Value);
+      if (Number.isFinite(v)) row.TobaccoAvailability = v;
+    }
+    if (r.ThirdCategory === "Walkability" && r.Time === "None") {
+      const v = toNum(r.Value);
+      if (Number.isFinite(v)) row.Walkability = v;
+    }
+    if (r.ThirdCategory === "AsthmaExpenditure") {
+      const v = toNum(r.Value);
+      if (Number.isFinite(v)) row._asthma.push(v);
+    }
+    if (r.ThirdCategory === "DementiaExpenditure") {
+      const v = toNum(r.Value);
+      if (Number.isFinite(v)) row._dementia.push(v);
+    }
+  }
+
+  const out = [];
+  for (const row of byMSOA.values()) {
+    row.Asthma_nMonths = row._asthma.length;
+    row.Dementia_nMonths = row._dementia.length;
+    row.AsthmaExpenditure_mean = mean(row._asthma);
+    row.DementiaExpenditure_mean = mean(row._dementia);
+    delete row._asthma;
+    delete row._dementia;
+    out.push(row);
+  }
+
+  out.sort((a,b)=>a.CityName.localeCompare(b.CityName) || a.MSOAName.localeCompare(b.MSOAName));
+  state.wideRows = out;
+
+  // after building wide table for a specific city, ensure city dropdown still works:
+  // we keep wideRows city-specific if user filtered city during pivot; that is OK for teaching.
+}
+
+/* -----------------------------
+   Experiment
+   ----------------------------- */
+function runCorrelation() {
+  if (!state.wideRows) return;
+
+  // use current view/filter city (grid data)
+  const rows = state.grid.getData("active") || [];
+  const xs = [], ys = [], labels = [];
+  for (const r of rows) {
+    xs.push(toNum(r.TobaccoAvailability));
+    ys.push(toNum(r.AsthmaExpenditure_mean));
+    labels.push(`${r.CityName} — ${r.MSOAName} (${r.MSOACode})`);
+  }
+
+  const { r, n } = pearson(xs, ys);
+
+  const trace = {
+    type: "scatter",
+    mode: "markers",
+    x: xs,
+    y: ys,
+    text: labels,
+    hovertemplate: "%{text}<br><b>Tobacco</b>=%{x}<br><b>Asthma mean</b>=%{y}<extra></extra>",
+    marker: { size: 8, opacity: 0.8 },
+  };
+
+  const layout = {
+    title: { text: `Tobacco availability vs Asthma expenditure<br><span style="font-size:12px;color:#6b7280">Pearson r = ${Number.isFinite(r) ? r.toFixed(3) : "NA"} (n=${n})</span>`, x: 0, xanchor: "left" },
+    margin: { t: 60, r: 10, b: 55, l: 70 },
+    xaxis: { title: "TobaccoAvailability (example scale)", zeroline: false },
+    yaxis: { title: "AsthmaExpenditure_mean (example £/citizen)", zeroline: false },
+  };
+
+  Plotly.react("chart", [trace], layout, { responsive:true, displaylogo:false });
+  el("chartCaption").textContent =
+    `We plotted one dot per MSOA. Pearson r summarizes association (not causation). r=${Number.isFinite(r) ? r.toFixed(3) : "NA"}, n=${n}.`;
+
+  // Teaching note in KPI area
+  el("kpiNote").textContent =
+    "Interpretation tip: check whether a single extreme dot drives the trend; then ask what other variables might explain both tobacco and asthma.";
+}
+
+/* -----------------------------
+   KPIs + chart helpers
+   ----------------------------- */
+function updateKPIs() {
+  const rows = state.grid?.getData("active") || [];
+  el("kpiRows").textContent = rows.length.toLocaleString();
+
+  const ms = new Set();
+  for (const r of rows) if (r.MSOACode) ms.add(r.MSOACode);
+  el("kpiGroups").textContent = ms.size ? ms.size.toLocaleString() : "—";
+
+  if (state.view === "long") {
+    const noneTime = rows.filter(r => String(r.Time).toLowerCase() === "none").length;
+    el("kpiNote").textContent = `Long-table quick check: rows with Time=None: ${noneTime.toLocaleString()}.`;
+  } else {
+    const missing = rows.filter(r => !Number.isFinite(toNum(r.AsthmaExpenditure_mean)) || !Number.isFinite(toNum(r.TobaccoAvailability))).length;
+    el("kpiNote").textContent = `Wide-table quick check: rows missing x or y for the experiment: ${missing.toLocaleString()}.`;
+  }
+}
+
+function clearChart(msg) {
+  Plotly.purge("chart");
+  Plotly.newPlot("chart", [], { margin: {t: 20, r: 10, b: 40, l: 50} }, {displaylogo:false, responsive:true});
+  el("chartCaption").textContent = msg;
+}
+
+/* -----------------------------
+   Step UI
+   ----------------------------- */
+function renderSteps() {
+  const wrap = el("steps");
+  wrap.innerHTML = "";
+  steps.forEach((s, i) => {
+    const d = document.createElement("div");
+    d.className = "step" + (i === state.stepIndex ? " active" : "");
+    d.innerHTML = `<div class="t">${s.title}</div><div class="d">${s.desc}</div>`;
+    d.onclick = () => { state.stepIndex = i; refreshStep(); };
+    wrap.appendChild(d);
+  });
+}
+
+function refreshStep() {
+  renderSteps();
+  steps[state.stepIndex].render();
+  el("btnPrev").disabled = state.stepIndex === 0;
+  el("btnNext").disabled = state.stepIndex === steps.length - 1;
+}
+
+/* -----------------------------
+   Boot + wiring
+   ----------------------------- */
+(function boot(){
+  initGrid();
+
+  // Populate city select
+  const cities = ["All cities", ...Array.from(new Set(state.longRows.map(r=>r.CityName))).sort()];
+  const cs = el("citySelect");
+  cities.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value = c; opt.textContent = c;
+    cs.appendChild(opt);
+  });
+  cs.value = "All cities";
+
+  // Initial view
+  showLong();
+  clearChart("Follow the steps; charts appear when relevant.");
+
+  // Wire controls
+  el("quickFilter").addEventListener("input", applyQuickFilterToGrid);
+  el("citySelect").addEventListener("change", () => {
+    // if user changes city, we show that scope immediately
+    if (state.view === "long") showLong();
+    else if (state.view === "wide") showWideIfReady();
+  });
+
+  el("viewSelect").addEventListener("change", () => {
+    const v = el("viewSelect").value;
+    if (v === "long") showLong();
+    else showWideIfReady();
+  });
+
+  el("btnReset").onclick = () => resetAllFilters();
+
+  el("btnPivot").onclick = () => {
+    buildWideTable();
+    // after pivot, switch to wide view automatically for teaching
+    showWideIfReady();
+  };
+
+  el("btnRunExp").onclick = () => runCorrelation();
+
+  // Step navigation
+  el("btnPrev").onclick = () => { state.stepIndex = Math.max(0, state.stepIndex - 1); refreshStep(); };
+  el("btnNext").onclick = () => { state.stepIndex = Math.min(steps.length - 1, state.stepIndex + 1); refreshStep(); };
+
+  // First step
+  refreshStep();
+})();
+</script>
+</body>
+</html>
