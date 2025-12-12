@@ -3,872 +3,827 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Guided Data Analysis — Healthy Cities (Exemplar) + Prompt Generator</title>
-
-  <!-- Handsontable -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@14.6.0/dist/handsontable.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/handsontable@14.6.0/dist/handsontable.min.js"></script>
-
-  <!-- Plotly -->
-  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
-
+  <title>AREA Framework Coach — Anticipation → AI Prompts</title>
   <style>
-    :root { color-scheme: light; }
-    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
-    header { padding: 14px 16px; border-bottom: 1px solid #e5e7eb; display:flex; gap:12px; align-items:center; }
-    header h1 { font-size: 16px; margin: 0; font-weight: 750; }
-    header .sub { color:#6b7280; font-size: 12px; }
-
-    main { display:grid; grid-template-columns: 390px 1fr; height: calc(100vh - 56px); }
-    aside { border-right:1px solid #e5e7eb; padding: 14px; overflow:auto; }
-    section { padding: 14px; overflow:auto; }
-
-    .card { border:1px solid #e5e7eb; border-radius: 12px; padding: 12px; margin-bottom: 12px; box-shadow: 0 1px 0 rgba(0,0,0,.02); background:#fff; }
-    .muted { color:#6b7280; font-size: 12px; line-height: 1.45; }
-    .warn { background:#fff7ed; border:1px solid #fed7aa; padding: 10px; border-radius: 12px; color:#9a3412; font-size: 12px; }
-    .ok { background:#f0fdf4; border:1px solid #bbf7d0; padding: 10px; border-radius: 12px; color:#166534; font-size: 12px; }
-
-    .steps { display:flex; flex-direction:column; gap:8px; }
-    .step { border:1px solid #e5e7eb; border-radius: 12px; padding: 10px; cursor:pointer; background:#fff; }
-    .step.active { border-color:#111827; box-shadow: 0 0 0 2px rgba(17,24,39,.08); }
-    .step .t { font-weight: 750; font-size: 13px; margin-bottom: 4px; }
-    .step .d { color:#6b7280; font-size: 12px; line-height: 1.35; }
-
-    .row { display:flex; gap:8px; flex-wrap: wrap; align-items:center; }
-    label { font-size: 12px; color:#374151; }
-    select, button, input[type="text"], textarea {
-      font: inherit; font-size: 12px;
-      border:1px solid #d1d5db; border-radius: 10px; padding: 8px 10px; background:#fff;
+    :root{
+      --bg:#0b1020; --panel:#111a33; --text:#e9ecff; --muted:#b9c0ff; --faint:#7e89d6;
+      --accent:#7aa2ff; --accent2:#67e8f9; --danger:#fb7185; --ok:#34d399;
+      --border:rgba(255,255,255,.10); --shadow:0 12px 30px rgba(0,0,0,.35);
+      --radius:18px; --radius2:14px;
+      --mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+      --sans:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";
     }
-    textarea { width: 100%; min-height: 84px; resize: vertical; }
-    button { cursor:pointer; }
-    button.primary { background:#111827; color:white; border-color:#111827; }
-    button:disabled { opacity:.5; cursor:not-allowed; }
-
-    code.inline { background:#f3f4f6; padding: 2px 6px; border-radius: 8px; }
-
-    .split { display:grid; grid-template-columns: 1.2fr .8fr; gap:12px; }
-
-    #sheetWrap { border:1px solid #e5e7eb; border-radius: 12px; overflow:hidden; height: 460px; }
-    #sheet { height: 460px; }
-    #chart { height: 360px; border:1px solid #e5e7eb; border-radius: 12px; }
-
-    .kpi { display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
-    .kpi > div { border:1px solid #e5e7eb; border-radius: 12px; padding: 10px; }
-    .kpi .v { font-size: 18px; font-weight: 850; }
-    .kpi .l { font-size: 11px; color:#6b7280; }
-
-    #status { margin-top: 8px; }
-    .pill { display:inline-block; padding:2px 8px; border:1px solid #e5e7eb; border-radius: 999px; font-size: 11px; color:#374151; background:#fff; }
-
-    .promptCard { border:1px dashed #d1d5db; border-radius: 12px; padding: 10px; background:#fafafa; }
-    .promptHeader { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom: 8px; }
-    .promptHeader .name { font-weight: 850; font-size: 12px; }
-    .promptHeader .actions { display:flex; gap:8px; align-items:center; }
-    .promptText { width: 100%; min-height: 130px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-
-    @media (max-width: 980px){
-      main{ grid-template-columns: 1fr; }
-      aside{ border-right:none; border-bottom:1px solid #e5e7eb; }
-      .split{ grid-template-columns: 1fr; }
-      #sheetWrap, #sheet { height: 360px; }
-      #chart{ height: 320px; }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:var(--sans); color:var(--text); min-height:100vh;
+      background:
+        radial-gradient(1200px 600px at 20% -10%, rgba(122,162,255,.25), transparent 60%),
+        radial-gradient(900px 500px at 90% 10%, rgba(103,232,249,.18), transparent 55%),
+        radial-gradient(900px 700px at 50% 120%, rgba(52,211,153,.10), transparent 55%),
+        var(--bg);
+    }
+    header{padding:28px 18px 8px; max-width:1040px; margin:0 auto}
+    h1{margin:0; font-size:clamp(22px,3vw,34px); letter-spacing:-.02em}
+    .subtitle{margin:8px 0 0; color:var(--muted); line-height:1.45; max-width:80ch}
+    main{max-width:1040px; margin:0 auto; padding:18px; display:grid; grid-template-columns:340px 1fr; gap:18px}
+    @media (max-width:920px){main{grid-template-columns:1fr}}
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--border); box-shadow:var(--shadow); border-radius:var(--radius); overflow:hidden;
+    }
+    .card .hd{padding:16px 16px 12px; border-bottom:1px solid var(--border); background:rgba(0,0,0,.12)}
+    .card .bd{padding:16px}
+    .title{display:flex; flex-wrap:wrap; gap:10px 14px; align-items:baseline; justify-content:space-between}
+    .pill{font-size:12px; padding:4px 8px; border-radius:999px; border:1px solid var(--border); color:var(--muted); background:rgba(0,0,0,.18); white-space:nowrap}
+    .pill.ok{color:var(--ok); border-color:rgba(52,211,153,.35)}
+    .pill.warn{color:#fde68a; border-color:rgba(253,230,138,.25)}
+    .mono{font-family:var(--mono)}
+    .small{font-size:13px; color:var(--muted); line-height:1.45}
+    .steps{display:flex; flex-direction:column; gap:10px; padding:8px}
+    .stepBtn{
+      width:100%; text-align:left; border:1px solid var(--border); background:rgba(15,23,48,.55);
+      color:var(--text); border-radius:var(--radius2); padding:12px; cursor:pointer;
+      transition:transform .05s ease, background .2s ease;
+    }
+    .stepBtn:hover{background:rgba(15,23,48,.8)}
+    .stepBtn:active{transform:translateY(1px)}
+    .stepBtn[aria-current="step"]{outline:2px solid rgba(122,162,255,.45); background:rgba(122,162,255,.14)}
+    .stepTop{display:flex; align-items:center; justify-content:space-between; gap:12px}
+    .progressWrap{padding:0 8px 12px}
+    .bar{height:10px; border-radius:999px; background:rgba(255,255,255,.08); border:1px solid var(--border); overflow:hidden}
+    .bar>div{height:100%; width:0%; background:linear-gradient(90deg, rgba(122,162,255,.95), rgba(103,232,249,.9)); transition:width .35s ease}
+    .kbd{font-family:var(--mono); font-size:12px; padding:2px 6px; border-radius:6px; border:1px solid var(--border); background:rgba(0,0,0,.25); color:var(--muted)}
+    .callout{border:1px solid var(--border); background:rgba(0,0,0,.14); border-radius:var(--radius2); padding:12px; margin:12px 0}
+    .callout strong{color:var(--accent2)}
+    .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+    @media (max-width:700px){.grid2{grid-template-columns:1fr}}
+    label{display:block; font-weight:650; margin:10px 0 6px}
+    input[type="text"], textarea, select{
+      width:100%; border:1px solid var(--border); background:rgba(15,23,48,.55); color:var(--text);
+      border-radius:14px; padding:10px 12px; font-size:14px; outline:none;
+    }
+    textarea{min-height:110px; resize:vertical}
+    input[type="text"]:focus, textarea:focus, select:focus{
+      border-color:rgba(122,162,255,.55); box-shadow:0 0 0 4px rgba(122,162,255,.12);
+    }
+    .hint{margin-top:6px; font-size:12.5px; color:var(--faint); line-height:1.4}
+    .btnRow{display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; align-items:center; justify-content:space-between}
+    .btnGroup{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
+    button{
+      border:1px solid var(--border); background:rgba(15,23,48,.65); color:var(--text);
+      border-radius:999px; padding:10px 14px; cursor:pointer;
+      transition:transform .05s ease, background .2s ease, border-color .2s ease;
+      font-weight:650;
+    }
+    button:hover{background:rgba(15,23,48,.9); border-color:rgba(255,255,255,.18)}
+    button:active{transform:translateY(1px)}
+    button.primary{
+      background:linear-gradient(90deg, rgba(122,162,255,.95), rgba(103,232,249,.85));
+      color:#081027; border-color:rgba(103,232,249,.35);
+    }
+    button.danger{border-color:rgba(251,113,133,.35); color:#ffd3da}
+    .qBlock{border:1px solid var(--border); background:rgba(15,23,48,.35); border-radius:var(--radius2); padding:12px; margin:12px 0}
+    .qTitle{margin:0 0 6px; font-size:15px; letter-spacing:-.01em}
+    .qMeta{font-size:12.5px; color:var(--muted); line-height:1.4; margin:0 0 10px}
+    .tagRow{display:flex; flex-wrap:wrap; gap:8px; margin:8px 0 0}
+    .tag{font-size:12px; padding:3px 8px; border-radius:999px; border:1px solid var(--border); background:rgba(0,0,0,.18); color:var(--muted)}
+    .status{display:flex; align-items:center; gap:10px; justify-content:space-between; padding:10px 12px; border:1px solid var(--border); border-radius:14px; background:rgba(0,0,0,.16)}
+    .status b{color:var(--accent2)}
+    .foot{margin-top:10px; font-size:12px; color:var(--faint); line-height:1.4}
+    .promptBox{
+      border:1px solid var(--border);
+      background:rgba(0,0,0,.22);
+      border-radius:14px;
+      padding:12px;
+      font-family:var(--mono);
+      font-size:12.5px;
+      line-height:1.5;
+      white-space:pre-wrap;
+      word-break:break-word;
+      max-height:360px;
+      overflow:auto;
     }
   </style>
 </head>
-
 <body>
 <header>
-  <h1>Guided Data Analysis — Healthy Cities Exemplar</h1>
-  <div class="sub">Embedded “long table” + beginner analysis + generates AI prompts from your work</div>
+  <div class="title">
+    <h1>AREA Framework Coach</h1>
+    <div class="pill mono" id="saveIndicator" title="Autosave status">saved</div>
+  </div>
+  <p class="subtitle">
+    Describe a software project, reflect using <b>AREA</b>, and then generate tailored <b>GenAI prompts</b>
+    (spec refinement, impact diagram, and an interactive HTML/JS illustration).
+  </p>
 </header>
 
 <main>
-  <aside>
-    <div class="card">
-      <div style="font-weight:850; font-size:13px;">Status</div>
-      <div class="muted" id="status">loading…</div>
-      <div class="muted" style="margin-top:8px;">
-        <span class="pill" id="scopePill">Scope: All cities</span>
-        <span class="pill" id="viewPill" style="margin-left:6px;">View: Long</span>
+  <section class="card" aria-label="Steps navigation">
+    <div class="hd">
+      <div class="status">
+        <div>
+          <div class="small">Progress</div>
+          <div><b id="pct">0%</b> complete</div>
+        </div>
+        <div class="kbd" title="Keyboard tip">Alt + ← / →</div>
       </div>
     </div>
-
-    <div class="card">
-      <div style="font-weight:850; font-size:13px; margin-bottom:8px;">Guided steps</div>
-      <div class="steps" id="steps"></div>
-      <div class="row" style="margin-top:10px;">
-        <button id="btnPrev">← Prev</button>
-        <button id="btnNext" class="primary">Next →</button>
+    <div class="bd">
+      <div class="progressWrap">
+        <div class="bar" aria-label="Completion bar"><div id="barFill"></div></div>
+        <div class="foot" id="progressNote"></div>
       </div>
-    </div>
+      <div class="steps" role="list" id="stepList"></div>
 
-    <div class="card">
-      <div style="font-weight:850; font-size:13px; margin-bottom:8px;">Controls</div>
-
-      <div class="row" style="margin-bottom:8px;">
-        <label>View</label>
-        <select id="viewSelect">
-          <option value="long">Long table (raw)</option>
-          <option value="wide">Wide table (pivoted)</option>
-        </select>
-      </div>
-
-      <div class="row" style="margin-bottom:8px;">
-        <label>City</label>
-        <select id="citySelect"></select>
-      </div>
-
-      <div class="row" style="margin-bottom:8px;">
-        <label>Quick search</label>
-        <input id="quickFilter" type="text" placeholder="search any field..." />
-      </div>
-
-      <div class="row">
-        <button id="btnReset">Reset</button>
-        <button id="btnPivot" class="primary">Build wide table</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div style="font-weight:850; font-size:13px;">Mini experiment</div>
-      <div class="muted" style="margin-top:6px;">
-        After pivoting:
-        <br/>• <b>TobaccoAvailability</b> vs <b>AsthmaExpenditure_mean</b>
-      </div>
-      <div class="row" style="margin-top:10px;">
-        <button id="btnRunExp" disabled>Run correlation</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div style="font-weight:900; font-size:13px;">Your project specification</div>
-      <div class="muted" style="margin-top:6px;">
-        As you work through the steps, write what project you want to build. The app will turn this into AI prompts.
-      </div>
-
-      <div class="row" style="margin-top:10px;">
-        <label style="width:100%;">Project goal (1–2 sentences)</label>
-        <textarea id="specGoal" placeholder="Example: Build an interactive dashboard that helps city planners explore links between built environment and health outcomes at MSOA level."></textarea>
-      </div>
-
-      <div class="row" style="margin-top:10px;">
-        <label style="width:100%;">Users & decisions</label>
-        <textarea id="specUsers" placeholder="Who uses it (e.g., public health teams)? What decisions will it support?"></textarea>
-      </div>
-
-      <div class="row" style="margin-top:10px;">
-        <label style="width:100%;">Inputs & outputs</label>
-        <textarea id="specIO" placeholder="Inputs (datasets/filters), outputs (charts, maps, reports), and constraints (privacy, accessibility)."></textarea>
-      </div>
-
-      <div class="row" style="margin-top:10px;">
-        <label style="width:100%;">Success criteria</label>
-        <textarea id="specSuccess" placeholder="Example: a novice can run a pivot + correlation and understand limitations within 10 minutes."></textarea>
-      </div>
-
-      <div class="row" style="margin-top:10px;">
-        <button id="btnGeneratePrompts" class="primary">Generate AI prompts</button>
-      </div>
-
-      <div class="muted" style="margin-top:8px;">
-        Tip: changing City/View and running the experiment updates the prompts with context.
-      </div>
-    </div>
-  </aside>
-
-  <section>
-    <div class="card">
-      <div id="stepTitle" style="font-weight:900; font-size:14px;"></div>
-      <div id="stepBody" class="muted" style="margin-top:6px;"></div>
-      <div id="stepBox" style="margin-top:10px;"></div>
-    </div>
-
-    <div class="split">
-      <div class="card">
-        <div style="font-weight:900; font-size:13px;">Spreadsheet</div>
-        <div class="muted" id="gridCaption" style="margin-top:6px;">Long table view (raw measurements).</div>
-
-        <div id="sheetWrap" style="margin-top:10px;">
-          <div id="sheet"></div>
+      <div class="callout">
+        <div class="small">
+          Tip: write assumptions and uncertainties. That’s often where the best AI feedback comes from.
         </div>
       </div>
 
-      <div>
-        <div class="card">
-          <div style="font-weight:900; font-size:13px;">Chart / results</div>
-          <div class="muted" id="chartCaption" style="margin-top:6px;">Charts appear when relevant.</div>
-          <div id="chart" style="margin-top:10px;"></div>
-        </div>
+      <button class="danger" id="resetBtn" title="Clears saved data for this app">Reset all</button>
+      <div class="foot">Data stays in your browser (<span class="mono">localStorage</span>).</div>
+    </div>
+  </section>
 
-        <div class="card">
-          <div style="font-weight:900; font-size:13px; margin-bottom:8px;">Quick checks</div>
-          <div class="kpi">
-            <div><div class="v" id="kpiRows">—</div><div class="l">Rows shown</div></div>
-            <div><div class="v" id="kpiGroups">—</div><div class="l">Distinct MSOAs</div></div>
-          </div>
-          <div class="muted" style="margin-top:8px;" id="kpiNote">—</div>
+  <section class="card" aria-label="Step content">
+    <div class="hd">
+      <div style="display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap;">
+        <div>
+          <div class="small" id="stepKicker">Step</div>
+          <div style="font-size:20px; font-weight:800; letter-spacing:-.01em;" id="stepTitle">—</div>
         </div>
+        <div class="pill" id="stepBadge">—</div>
       </div>
     </div>
-
-    <div class="card">
-      <div style="font-weight:900; font-size:13px;">Generated generative-AI prompts</div>
-      <div class="muted" style="margin-top:6px;">
-        These prompts are built from your specification + your interactions (scope, pivot choice, experiment results).
-        Copy/paste them into your AI tool of choice.
-      </div>
-
-      <div style="margin-top:10px; display:grid; gap:10px;">
-        <div class="promptCard">
-          <div class="promptHeader">
-            <div class="name">Prompt A — Spec refinement recommendations</div>
-            <div class="actions">
-              <button data-copy="promptRefine">Copy</button>
-            </div>
-          </div>
-          <textarea class="promptText" id="promptRefine" readonly></textarea>
-        </div>
-
-        <div class="promptCard">
-          <div class="promptHeader">
-            <div class="name">Prompt B — Diagram of the project and its impacts</div>
-            <div class="actions">
-              <button data-copy="promptDiagram">Copy</button>
-            </div>
-          </div>
-          <textarea class="promptText" id="promptDiagram" readonly></textarea>
-        </div>
-
-        <div class="promptCard">
-          <div class="promptHeader">
-            <div class="name">Prompt C — Generate an interactive HTML/JS program illustrating the project</div>
-            <div class="actions">
-              <button data-copy="promptBuild">Copy</button>
-            </div>
-          </div>
-          <textarea class="promptText" id="promptBuild" readonly></textarea>
-        </div>
-      </div>
-    </div>
+    <div class="bd" id="content"></div>
   </section>
 </main>
 
 <script>
-/* ========== error visibility ========== */
-window.addEventListener("error", (e) => {
-  const s = document.getElementById("status");
-  if (s) s.textContent = "JS error — " + (e?.message || "unknown");
-});
+(() => {
+  const STORAGE_KEY = "area-coach-v2-prompts";
 
-/* ========== data ========== */
-const EXEMPLAR_LONG = [
-  {TopCategory:"EnvironmentalDeterminants", SecondCategory:"BuiltEnvironment", ThirdCategory:"TobaccoAvailability", CityName:"Riverside", MSOACode:"RV01", MSOAName:"Riverside Central", Time:"None",   Key:"value",     Value:"0.38"},
-  {TopCategory:"EnvironmentalDeterminants", SecondCategory:"BuiltEnvironment", ThirdCategory:"Walkability",        CityName:"Riverside", MSOACode:"RV01", MSOAName:"Riverside Central", Time:"None",   Key:"value",     Value:"72"},
-  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Riverside", MSOACode:"RV01", MSOAName:"Riverside Central", Time:"2023-01", Key:"£/citizen", Value:"21.0"},
-  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Riverside", MSOACode:"RV01", MSOAName:"Riverside Central", Time:"2023-02", Key:"£/citizen", Value:"23.4"},
-  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Riverside", MSOACode:"RV01", MSOAName:"Riverside Central", Time:"2023-03", Key:"£/citizen", Value:"22.2"},
-
-  {TopCategory:"EnvironmentalDeterminants", SecondCategory:"BuiltEnvironment", ThirdCategory:"TobaccoAvailability", CityName:"Riverside", MSOACode:"RV02", MSOAName:"Riverside North",   Time:"None",   Key:"value",     Value:"0.22"},
-  {TopCategory:"EnvironmentalDeterminants", SecondCategory:"BuiltEnvironment", ThirdCategory:"Walkability",        CityName:"Riverside", MSOACode:"RV02", MSOAName:"Riverside North",   Time:"None",   Key:"value",     Value:"64"},
-  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Riverside", MSOACode:"RV02", MSOAName:"Riverside North",   Time:"2023-01", Key:"£/citizen", Value:"16.4"},
-  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Riverside", MSOACode:"RV02", MSOAName:"Riverside North",   Time:"2023-02", Key:"£/citizen", Value:"15.8"},
-  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Riverside", MSOACode:"RV02", MSOAName:"Riverside North",   Time:"2023-03", Key:"£/citizen", Value:"17.1"},
-
-  {TopCategory:"EnvironmentalDeterminants", SecondCategory:"BuiltEnvironment", ThirdCategory:"TobaccoAvailability", CityName:"Hillford", MSOACode:"HF01", MSOAName:"Hillford East", Time:"None",   Key:"value",     Value:"0.44"},
-  {TopCategory:"EnvironmentalDeterminants", SecondCategory:"BuiltEnvironment", ThirdCategory:"Walkability",        CityName:"Hillford", MSOACode:"HF01", MSOAName:"Hillford East", Time:"None",   Key:"value",     Value:"51"},
-  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Hillford", MSOACode:"HF01", MSOAName:"Hillford East", Time:"2023-01", Key:"£/citizen", Value:"27.5"},
-  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Hillford", MSOACode:"HF01", MSOAName:"Hillford East", Time:"2023-02", Key:"£/citizen", Value:"26.9"},
-  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Hillford", MSOACode:"HF01", MSOAName:"Hillford East", Time:"2023-03", Key:"£/citizen", Value:"28.1"},
-
-  {TopCategory:"EnvironmentalDeterminants", SecondCategory:"BuiltEnvironment", ThirdCategory:"TobaccoAvailability", CityName:"Hillford", MSOACode:"HF02", MSOAName:"Hillford West", Time:"None",   Key:"value",     Value:"0.18"},
-  {TopCategory:"EnvironmentalDeterminants", SecondCategory:"BuiltEnvironment", ThirdCategory:"Walkability",        CityName:"Hillford", MSOACode:"HF02", MSOAName:"Hillford West", Time:"None",   Key:"value",     Value:"78"},
-  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Hillford", MSOACode:"HF02", MSOAName:"Hillford West", Time:"2023-01", Key:"£/citizen", Value:"14.2"},
-  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Hillford", MSOACode:"HF02", MSOAName:"Hillford West", Time:"2023-02", Key:"£/citizen", Value:"13.7"},
-  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Hillford", MSOACode:"HF02", MSOAName:"Hillford West", Time:"2023-03", Key:"£/citizen", Value:"14.9"},
-];
-
-const el = (id) => document.getElementById(id);
-const state = {
-  longRows: JSON.parse(JSON.stringify(EXEMPLAR_LONG)),
-  wideRows: null,
-  view: "long",
-  stepIndex: 0,
-  hot: null,
-  lastExperiment: null, // {r,n,city,points}
-};
-
-/* ========== teaching steps ========== */
-const steps = [
-  { title:"1) Start with a question", desc:"Define what you want to learn.", render(){
-      setStep("Start with a question",
-        `Begin with a question, not a chart. Example: “Do areas with more tobacco outlets have higher asthma costs?”
-         <br/><br/>Find <code class="inline">ThirdCategory</code>, <code class="inline">Time</code>, <code class="inline">Value</code>. What does one row represent?`,
-        warnBox(`Try searching “AsthmaExpenditure”.`)
-      );
-      showLong();
-  }},
-  { title:"2) Understand the long table", desc:"One row = one measurement.", render(){
-      setStep("Understand the long table",
-        `Each row answers: what / where / when / value. Time “None” means not a time series in this exemplar.`,
-        okBox(`Search “None” and see which indicators are single values.`)
-      );
-      showLong();
-  }},
-  { title:"3) Choose scope", desc:"All cities or one city?", render(){
-      setStep("Choose your scope",
-        `Scope changes results. Choose a city (or all cities) before you analyse. Write it down in your spec.`,
-        warnBox(`Switch the City dropdown and watch the table update.`)
-      );
-      showLong();
-  }},
-  { title:"4) Pivot (wide table)", desc:"Make one row per MSOA.", render(){
-      setStep("Pivot to a wide table",
-        `To compare variables side-by-side, pivot long→wide. Here we compute Asthma mean over months per MSOA.`,
-        okBox(`Click “Build wide table”, then switch View to “Wide table”.`)
-      );
-      showLong();
-  }},
-  { title:"5) Run experiment", desc:"Scatter + Pearson r.", render(){
-      setStep("Experiment: Tobacco vs Asthma",
-        `We’ll plot one dot per MSOA and compute Pearson r (association, not causation).`,
-        warnBox(`Build the wide table first, then click “Run correlation”.`)
-      );
-      showWideIfReady();
-  }},
-  { title:"6) Generate AI prompts", desc:"Turn your work into prompts.", render(){
-      setStep("Generate AI prompts",
-        `Now you’ll generate three prompts:
-         <ol>
-           <li>Ask an AI to <b>refine</b> your project spec.</li>
-           <li>Ask an AI for a <b>diagram</b> of the project + impacts.</li>
-           <li>Ask an AI to build an <b>interactive HTML/JS demo</b> illustrating the project.</li>
-         </ol>
-         Fill in the project specification panel (left) and click <b>Generate AI prompts</b>.`,
-        okBox(`Tip: run the experiment first so the prompts include analysis context.`)
-      );
-  }},
-];
-
-function setStep(title, bodyHtml, boxHtml) {
-  el("stepTitle").textContent = title;
-  el("stepBody").innerHTML = bodyHtml;
-  el("stepBox").innerHTML = boxHtml || "";
-}
-function warnBox(html){ return `<div class="warn"><b>Try this:</b> ${html}</div>`; }
-function okBox(html){ return `<div class="ok"><b>Good to know:</b> ${html}</div>`; }
-
-/* ========== helpers ========== */
-function toNum(x) {
-  const n = Number(String(x ?? "").trim());
-  return Number.isFinite(n) ? n : NaN;
-}
-function mean(arr) {
-  let s=0,c=0;
-  for (const v of arr) if (Number.isFinite(v)) { s += v; c++; }
-  return c ? s/c : NaN;
-}
-function pearson(xs, ys) {
-  const pts = [];
-  for (let i=0;i<xs.length;i++){
-    const x=xs[i], y=ys[i];
-    if (Number.isFinite(x) && Number.isFinite(y)) pts.push([x,y]);
-  }
-  const n = pts.length;
-  if (n < 3) return { r: NaN, n };
-
-  let sx=0, sy=0;
-  for (const [x,y] of pts){ sx+=x; sy+=y; }
-  const mx = sx/n, my = sy/n;
-
-  let num=0, dx=0, dy=0;
-  for (const [x,y] of pts){
-    const vx=x-mx, vy=y-my;
-    num += vx*vy;
-    dx += vx*vx;
-    dy += vy*vy;
-  }
-  const den = Math.sqrt(dx*dy);
-  return { r: den ? num/den : NaN, n };
-}
-
-function applyFilters(rows) {
-  const city = el("citySelect").value;
-  const q = el("quickFilter").value.trim().toLowerCase();
-
-  let out = rows;
-  if (city !== "All cities") out = out.filter(r => r.CityName === city);
-  if (q) out = out.filter(r => Object.values(r).some(v => String(v ?? "").toLowerCase().includes(q)));
-  return out;
-}
-
-/* ========== pivot ========== */
-function buildWideTableFromLong(longRowsFiltered) {
-  const byMSOA = new Map();
-
-  function ensure(r) {
-    if (!byMSOA.has(r.MSOACode)) byMSOA.set(r.MSOACode, {
-      CityName: r.CityName,
-      MSOAName: r.MSOAName,
-      MSOACode: r.MSOACode,
-      TobaccoAvailability: NaN,
-      Walkability: NaN,
-      AsthmaExpenditure_mean: NaN,
-      Asthma_nMonths: 0,
-      _asthma: [],
-    });
-    return byMSOA.get(r.MSOACode);
-  }
-
-  for (const r of longRowsFiltered) {
-    if (!r.MSOACode) continue;
-    const row = ensure(r);
-
-    if (r.ThirdCategory === "TobaccoAvailability" && r.Time === "None") {
-      const v = toNum(r.Value);
-      if (Number.isFinite(v)) row.TobaccoAvailability = v;
-    }
-    if (r.ThirdCategory === "Walkability" && r.Time === "None") {
-      const v = toNum(r.Value);
-      if (Number.isFinite(v)) row.Walkability = v;
-    }
-    if (r.ThirdCategory === "AsthmaExpenditure") {
-      const v = toNum(r.Value);
-      if (Number.isFinite(v)) row._asthma.push(v);
-    }
-  }
-
-  const out = [];
-  for (const row of byMSOA.values()) {
-    row.Asthma_nMonths = row._asthma.length;
-    row.AsthmaExpenditure_mean = mean(row._asthma);
-    delete row._asthma;
-    out.push(row);
-  }
-  out.sort((a,b) => a.CityName.localeCompare(b.CityName) || a.MSOAName.localeCompare(b.MSOAName));
-  return out;
-}
-
-/* ========== handsontable ========== */
-function ensureHot() {
-  if (state.hot) return;
-  const container = el("sheet");
-  state.hot = new Handsontable(container, {
-    data: [[]],
-    colHeaders: [],
-    rowHeaders: true,
-    readOnly: true,
-    height: 460,
-    width: "100%",
-    stretchH: "all",
-    manualColumnResize: true,
-    filters: true,
-    dropdownMenu: true,
-    columnSorting: true,
-    licenseKey: "non-commercial-and-evaluation",
-  });
-}
-
-function setSheet(rows, columnsOrder) {
-  ensureHot();
-  const dataMatrix = rows.map(r => columnsOrder.map(c => r[c]));
-  state.hot.loadData(dataMatrix);
-  state.hot.updateSettings({ colHeaders: columnsOrder });
-  state.hot.render();
-  updateKPIs(rows);
-}
-
-function updateKPIs(rows) {
-  el("kpiRows").textContent = rows.length.toLocaleString();
-  const ms = new Set(rows.map(r => r.MSOACode).filter(Boolean));
-  el("kpiGroups").textContent = ms.size ? ms.size.toLocaleString() : "—";
-
-  if (state.view === "long") {
-    const noneTime = rows.filter(r => String(r.Time).toLowerCase() === "none").length;
-    el("kpiNote").textContent = `Long table check: rows with Time=None: ${noneTime.toLocaleString()}.`;
-  } else {
-    const missing = rows.filter(r =>
-      !Number.isFinite(toNum(r.TobaccoAvailability)) || !Number.isFinite(toNum(r.AsthmaExpenditure_mean))
-    ).length;
-    el("kpiNote").textContent = `Wide table check: rows missing x or y: ${missing.toLocaleString()}.`;
-  }
-}
-
-function clearChart(msg) {
-  Plotly.purge("chart");
-  Plotly.newPlot("chart", [], { margin: {t: 20, r: 10, b: 40, l: 50} }, {displaylogo:false, responsive:true});
-  el("chartCaption").textContent = msg;
-}
-
-/* ========== views ========== */
-const LONG_COLS = ["TopCategory","SecondCategory","ThirdCategory","CityName","MSOAName","MSOACode","Time","Key","Value"];
-const WIDE_COLS = ["CityName","MSOAName","MSOACode","TobaccoAvailability","Walkability","AsthmaExpenditure_mean","Asthma_nMonths"];
-
-function updatePills() {
-  const city = el("citySelect").value;
-  el("scopePill").textContent = `Scope: ${city}`;
-  el("viewPill").textContent = `View: ${state.view === "long" ? "Long" : "Wide"}`;
-}
-
-function showLong() {
-  state.view = "long";
-  el("viewSelect").value = "long";
-  el("gridCaption").textContent = "Long table view (raw measurements).";
-  el("btnRunExp").disabled = true;
-
-  const rows = applyFilters(state.longRows);
-  setSheet(rows, LONG_COLS);
-  clearChart("In long-table view. Build the wide table to run the experiment.");
-  updatePills();
-  autoRefreshPrompts();
-}
-
-function showWideIfReady() {
-  if (!state.wideRows) {
-    clearChart("Build the wide table first (click “Build wide table”).");
-    updatePills();
-    autoRefreshPrompts();
-    return;
-  }
-  showWide();
-}
-
-function showWide() {
-  state.view = "wide";
-  el("viewSelect").value = "wide";
-  el("gridCaption").textContent = "Wide table view (pivoted, analysis-ready).";
-  el("btnRunExp").disabled = false;
-
-  const rows = applyFilters(state.wideRows);
-  setSheet(rows, WIDE_COLS);
-  clearChart("Wide table ready. Click “Run correlation” to create a chart.");
-  updatePills();
-  autoRefreshPrompts();
-}
-
-/* ========== experiment ========== */
-function runCorrelation() {
-  if (!state.wideRows) return;
-
-  const rows = applyFilters(state.wideRows);
-  const xs = [], ys = [], labels = [];
-
-  for (const r of rows) {
-    const x = toNum(r.TobaccoAvailability);
-    const y = toNum(r.AsthmaExpenditure_mean);
-    if (Number.isFinite(x) && Number.isFinite(y)) {
-      xs.push(x); ys.push(y);
-      labels.push(`${r.CityName} — ${r.MSOAName} (${r.MSOACode})`);
-    }
-  }
-
-  const { r, n } = pearson(xs, ys);
-  state.lastExperiment = {
-    r, n,
-    city: el("citySelect").value,
-    points: xs.length
-  };
-
-  const trace = {
-    type: "scatter",
-    mode: "markers",
-    x: xs,
-    y: ys,
-    text: labels,
-    hovertemplate: "%{text}<br><b>Tobacco</b>=%{x}<br><b>Asthma mean</b>=%{y}<extra></extra>",
-    marker: { size: 9, opacity: 0.8 },
-  };
-
-  const layout = {
-    title: {
-      text: `Tobacco availability vs Asthma expenditure<br><span style="font-size:12px;color:#6b7280">Pearson r = ${Number.isFinite(r) ? r.toFixed(3) : "NA"} (n=${n})</span>`,
-      x: 0, xanchor: "left"
+  const model = {
+    meta: {
+      projectName: "",
+      projectOneLiner: "",
+      projectStage: "idea",
+      stack: "",
+      users: "",
+      constraints: "",
+      dateStarted: new Date().toISOString()
     },
-    margin: { t: 60, r: 10, b: 55, l: 70 },
-    xaxis: { title: "TobaccoAvailability (example scale)", zeroline: false },
-    yaxis: { title: "AsthmaExpenditure_mean (example £/citizen)", zeroline: false },
+    anticipate: {
+      intendedOutcomes: "",
+      stakeholders: "",
+      impacts: "",
+      risksFailures: "",
+      misuseAbuse: "",
+      dataPrivacySecurity: "",
+      fairnessInclusion: "",
+      environmentalSocial: "",
+      legalRegulatory: "",
+      uncertaintiesAssumptions: "",
+      alternatives: "",
+      mitigations: "",
+      goNoGo: ""
+    }
   };
 
-  Plotly.react("chart", [trace], layout, { responsive:true, displaylogo:false });
-  el("chartCaption").textContent =
-    `One dot per MSOA. Pearson r summarizes association (not causation). r=${Number.isFinite(r) ? r.toFixed(3) : "NA"}, n=${n}.`;
+  const steps = [
+    { id:"welcome", title:"Welcome & how this works", badge:"Start",
+      render: renderWelcome,
+      isComplete: () => model.meta.projectName.trim().length > 0
+    },
+    { id:"project", title:"Your project (context)", badge:"Setup",
+      render: renderProject,
+      isComplete: () =>
+        model.meta.projectName.trim().length > 0 &&
+        model.meta.projectOneLiner.trim().length > 0 &&
+        model.meta.users.trim().length > 0
+    },
+    { id:"anticipate", title:"Anticipation — critical questions", badge:"Deep dive",
+      render: renderAnticipation,
+      isComplete: () => completionAnticipation() >= 0.65
+    },
+    { id:"prompts", title:"Generate AI prompts", badge:"Outputs",
+      render: renderPrompts,
+      isComplete: () => true
+    }
+  ];
 
-  autoRefreshPrompts();
-}
+  let currentStepIndex = 0;
 
-/* ========== prompt generation ========== */
-function getSpec() {
-  return {
-    goal: el("specGoal").value.trim(),
-    users: el("specUsers").value.trim(),
-    io: el("specIO").value.trim(),
-    success: el("specSuccess").value.trim(),
-  };
-}
+  const $ = (sel) => document.querySelector(sel);
+  const stepList = $("#stepList");
+  const content = $("#content");
+  const stepTitle = $("#stepTitle");
+  const stepKicker = $("#stepKicker");
+  const stepBadge = $("#stepBadge");
+  const saveIndicator = $("#saveIndicator");
+  const pct = $("#pct");
+  const barFill = $("#barFill");
+  const progressNote = $("#progressNote");
 
-function getInteractionContext() {
-  const scope = el("citySelect").value;
-  const view = state.view;
-  const didPivot = !!state.wideRows;
-  const exp = state.lastExperiment;
-
-  const search = el("quickFilter").value.trim();
-
-  return {
-    scope,
-    view,
-    didPivot,
-    quickSearch: search || "(none)",
-    exemplarDatasetNotes: [
-      "Data stored as long table with fields: TopCategory, SecondCategory, ThirdCategory, CityName, MSOAName, MSOACode, Time, Key, Value.",
-      "Some indicators are not time series (Time=None).",
-      "Pivot step creates wide table: one row per MSOA with indicator columns; Asthma expenditure aggregated as mean across months."
-    ],
-    experiment: exp ? {
-      ran: true,
-      city: exp.city,
-      points: exp.points,
-      pearsonR: Number.isFinite(exp.r) ? exp.r : null,
-      n: exp.n
-    } : { ran: false }
-  };
-}
-
-function buildPrompts() {
-  const spec = getSpec();
-  const ctx = getInteractionContext();
-
-  const specBlock = [
-    `PROJECT SPECIFICATION (draft)`,
-    `Goal: ${spec.goal || "(not provided)"}`,
-    `Users & decisions: ${spec.users || "(not provided)"}`,
-    `Inputs & outputs: ${spec.io || "(not provided)"}`,
-    `Success criteria: ${spec.success || "(not provided)"}`
-  ].join("\n");
-
-  const ctxBlock = [
-    `CONTEXT FROM THE PROTOTYPE APP (user interactions)`,
-    `Scope (city selection): ${ctx.scope}`,
-    `Current view: ${ctx.view}`,
-    `Wide-table pivot built: ${ctx.didPivot ? "yes" : "no"}`,
-    `Quick search term used: ${ctx.quickSearch}`,
-    `Experiment run: ${ctx.experiment.ran ? "yes" : "no"}`,
-    ctx.experiment.ran
-      ? `Experiment details: points=${ctx.experiment.points}, n=${ctx.experiment.n}, Pearson r=${ctx.experiment.pearsonR ?? "NA"} (tobacco availability vs asthma expenditure mean)`
-      : `Experiment details: (not run yet)`,
-    ``,
-    `Dataset notes:`,
-    ...ctx.exemplarDatasetNotes.map(x => `- ${x}`)
-  ].join("\n");
-
-  // Prompt A: spec refinement recommendations
-  const promptRefine =
-`You are an expert product manager and data-science lead.
-
-${specBlock}
-
-${ctxBlock}
-
-TASK:
-1) Suggest refinements and missing details in the specification so it is implementation-ready.
-2) Identify ambiguities and ask the minimum set of clarifying questions (grouped by: data, users, UX, evaluation, privacy/ethics).
-3) Recommend a phased plan (MVP → v1 → v2) with acceptance criteria for each phase.
-4) Include risks (data quality, bias, misinterpretation, confounding) and how to mitigate them.
-5) Output your answer as:
-   - "Refinements"
-   - "Clarifying questions"
-   - "Phased plan"
-   - "Risks & mitigations"
-`;
-
-  // Prompt B: diagram of project + impacts (text-based diagram)
-  const promptDiagram =
-`You are a systems thinker and technical communicator.
-
-${specBlock}
-
-${ctxBlock}
-
-TASK:
-Create a clear diagram of the project and its impacts.
-- Provide TWO versions:
-  (A) a Mermaid diagram (flowchart or system diagram),
-  (B) a simple ASCII diagram.
-- Your diagram must include:
-  - Actors/users
-  - Data sources & preprocessing (long→wide pivot, aggregation decisions)
-  - Analysis modules (filters, summary stats, correlation/experiments)
-  - UI/interaction steps (guided learning)
-  - Outputs (charts, tables, reports)
-  - Impact pathways (how it changes decisions and outcomes)
-  - Risks/guardrails (misinterpretation, bias, privacy)
-- Then add a short paragraph explaining the diagram in plain language.
-`;
-
-  // Prompt C: ask AI to generate an interactive HTML/JS program illustrating the project
-  const promptBuild =
-`You are a senior frontend engineer and data-visualization developer.
-
-${specBlock}
-
-${ctxBlock}
-
-TASK:
-Generate a single-file HTML + JavaScript program (no build step) that interactively illustrates the function of this project.
-Requirements:
-- Must be beginner-friendly and guide the user step-by-step (teach what/why).
-- Include a spreadsheet-like grid for data (use a robust library like Handsontable OR implement a simple table if no CDN).
-- Use an embedded exemplar dataset matching the described schema (long table; include some Time=None and some time series).
-- Implement:
-  1) Long-table view + filtering (city, search)
-  2) Pivot/aggregation to a wide table (one row per MSOA; choose mean across months for one metric)
-  3) At least one simple “experiment” (scatter + correlation) with warnings about correlation≠causation
-  4) A "Generate prompts" panel that produces prompts similar to: refinement, diagram, and app generator prompts
-- Must run by opening the HTML file directly.
-- Keep styling clean and minimal. Include comments explaining key parts of the code.
-Output ONLY the complete HTML file.
-`;
-
-  return { promptRefine, promptDiagram, promptBuild };
-}
-
-function setPrompts(prompts) {
-  el("promptRefine").value = prompts.promptRefine;
-  el("promptDiagram").value = prompts.promptDiagram;
-  el("promptBuild").value = prompts.promptBuild;
-}
-
-function autoRefreshPrompts() {
-  // lightweight auto-refresh: only if any prompt already exists OR if user filled any spec fields
-  const spec = getSpec();
-  const haveSpec = (spec.goal || spec.users || spec.io || spec.success);
-  const already = (el("promptRefine").value || el("promptDiagram").value || el("promptBuild").value);
-  if (!haveSpec && !already) return;
-
-  setPrompts(buildPrompts());
-}
-
-async function copyToClipboard(text) {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    // fallback
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    document.body.appendChild(ta);
-    ta.select();
-    try { document.execCommand("copy"); } catch {}
-    document.body.removeChild(ta);
-    return true;
-  }
-}
-
-/* ========== steps UI ========== */
-function renderSteps() {
-  const wrap = el("steps");
-  wrap.innerHTML = "";
-  steps.forEach((s, i) => {
-    const d = document.createElement("div");
-    d.className = "step" + (i === state.stepIndex ? " active" : "");
-    d.innerHTML = `<div class="t">${s.title}</div><div class="d">${s.desc}</div>`;
-    d.onclick = () => { state.stepIndex = i; refreshStep(); };
-    wrap.appendChild(d);
-  });
-}
-function refreshStep() {
-  renderSteps();
-  steps[state.stepIndex].render();
-  el("btnPrev").disabled = state.stepIndex === 0;
-  el("btnNext").disabled = state.stepIndex === steps.length - 1;
-}
-
-/* ========== boot ========== */
-window.addEventListener("DOMContentLoaded", () => {
-  const status = el("status");
-
-  if (!window.Handsontable) {
-    status.textContent = "Handsontable failed to load (check CDN/network access).";
-    status.className = "warn";
-    return;
+  function deepAssign(target, src) {
+    if (!src || typeof src !== "object") return;
+    for (const k of Object.keys(src)) {
+      if (src[k] && typeof src[k] === "object" && !Array.isArray(src[k])) {
+        if (!target[k]) target[k] = {};
+        deepAssign(target[k], src[k]);
+      } else if (k in target) {
+        target[k] = src[k];
+      }
+    }
   }
 
-  // Populate cities
-  const cities = ["All cities", ...Array.from(new Set(state.longRows.map(r => r.CityName))).sort()];
-  const cs = el("citySelect");
-  cities.forEach(c => {
-    const opt = document.createElement("option");
-    opt.value = c; opt.textContent = c;
-    cs.appendChild(opt);
-  });
-  cs.value = "All cities";
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      deepAssign(model, JSON.parse(raw));
+    } catch (e) { console.warn("Load failed:", e); }
+  }
+  function save() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(model, null, 2));
+      flashSaved();
+    } catch (e) {
+      console.warn("Save failed:", e);
+      saveIndicator.textContent = "save failed";
+      saveIndicator.style.borderColor = "rgba(251,113,133,.35)";
+      saveIndicator.style.color = "#ffd3da";
+    }
+  }
+  let saveTimer = null;
+  function scheduleSave() {
+    saveIndicator.textContent = "saving…";
+    saveIndicator.className = "pill mono";
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(save, 250);
+  }
+  function flashSaved() {
+    saveIndicator.textContent = "saved";
+    saveIndicator.className = "pill mono";
+    saveIndicator.style.borderColor = "rgba(52,211,153,.35)";
+    saveIndicator.style.color = "var(--ok)";
+    setTimeout(() => { saveIndicator.style.borderColor = ""; saveIndicator.style.color = ""; }, 650);
+  }
 
-  clearChart("Follow the steps; charts appear when relevant.");
-  ensureHot();
+  function completionAnticipation() {
+    const a = model.anticipate;
+    const fields = [
+      a.intendedOutcomes, a.stakeholders, a.impacts, a.risksFailures, a.misuseAbuse,
+      a.dataPrivacySecurity, a.fairnessInclusion, a.environmentalSocial,
+      a.uncertaintiesAssumptions, a.mitigations, a.goNoGo
+    ];
+    const filled = fields.filter(v => (v || "").trim().length >= 20).length;
+    return filled / fields.length;
+  }
 
-  // Initial view
-  showLong();
-  refreshStep();
-  status.textContent = "Ready (exemplar data loaded).";
-  updatePills();
+  function overallCompletion() {
+    const completeCount = steps.filter(s => s.isComplete()).length;
+    return completeCount / steps.length;
+  }
 
-  // UI wiring
-  el("quickFilter").addEventListener("input", () => (state.view === "long" ? showLong() : showWideIfReady()));
-  el("citySelect").addEventListener("change", () => (state.view === "long" ? showLong() : showWideIfReady()));
-  el("viewSelect").addEventListener("change", () => (el("viewSelect").value === "long" ? showLong() : showWideIfReady()));
+  function updateProgressUI() {
+    const ratio = overallCompletion();
+    const percent = Math.round(ratio * 100);
+    pct.textContent = `${percent}%`;
+    barFill.style.width = `${percent}%`;
+    const next = steps.find(s => !s.isComplete());
+    progressNote.textContent = next ? `Next: ${next.title}` : `All steps available — export prompts and iterate.`;
+  }
 
-  el("btnReset").onclick = () => {
-    el("quickFilter").value = "";
-    cs.value = "All cities";
-    state.lastExperiment = null;
-    if (state.view === "long") showLong(); else showWideIfReady();
-  };
+  function buildNav() {
+    stepList.innerHTML = "";
+    steps.forEach((s, i) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "stepBtn";
+      btn.setAttribute("role","listitem");
+      btn.onclick = () => goTo(i);
 
-  el("btnPivot").onclick = () => {
-    const longFiltered = applyFilters(state.longRows); // scope matters
-    state.wideRows = buildWideTableFromLong(longFiltered);
-    el("btnRunExp").disabled = false;
-    showWideIfReady();
-  };
+      const top = document.createElement("div");
+      top.className = "stepTop";
 
-  el("btnRunExp").onclick = () => runCorrelation();
+      const left = document.createElement("div");
+      left.style.display="flex";
+      left.style.flexDirection="column";
+      left.style.gap="3px";
 
-  el("btnPrev").onclick = () => { state.stepIndex = Math.max(0, state.stepIndex - 1); refreshStep(); };
-  el("btnNext").onclick = () => { state.stepIndex = Math.min(steps.length - 1, state.stepIndex + 1); refreshStep(); };
+      const t = document.createElement("div");
+      t.style.fontWeight="850";
+      t.style.letterSpacing="-.01em";
+      t.textContent = s.title;
 
-  // Spec fields auto-refresh prompts
-  ["specGoal","specUsers","specIO","specSuccess"].forEach(id => {
-    el(id).addEventListener("input", () => autoRefreshPrompts());
-  });
+      const small = document.createElement("div");
+      small.className="small";
+      small.textContent = s.badge;
 
-  el("btnGeneratePrompts").onclick = () => {
-    setPrompts(buildPrompts());
-    // jump user to last step if they want
-    // state.stepIndex = steps.length - 1; refreshStep();
-  };
+      left.appendChild(t);
+      left.appendChild(small);
 
-  // Copy buttons
-  document.querySelectorAll("button[data-copy]").forEach(btn => {
-    btn.addEventListener("click", async () => {
-      const targetId = btn.getAttribute("data-copy");
-      const text = el(targetId).value || "";
-      if (!text.trim()) return;
-      btn.textContent = "Copied!";
-      await copyToClipboard(text);
-      setTimeout(()=>btn.textContent="Copy", 900);
+      const pill = document.createElement("div");
+      pill.className = "pill " + (s.isComplete() ? "ok" : "warn");
+      pill.textContent = s.isComplete() ? "ready" : "in progress";
+
+      top.appendChild(left);
+      top.appendChild(pill);
+
+      btn.appendChild(top);
+      if (i === currentStepIndex) btn.setAttribute("aria-current","step");
+      stepList.appendChild(btn);
     });
+  }
+
+  function goTo(i){ currentStepIndex = Math.max(0, Math.min(steps.length-1, i)); render(); }
+  function next(){ goTo(currentStepIndex + 1); }
+  function prev(){ goTo(currentStepIndex - 1); }
+
+  window.addEventListener("keydown", (e) => {
+    if (!e.altKey) return;
+    if (e.key === "ArrowRight") { e.preventDefault(); next(); }
+    if (e.key === "ArrowLeft") { e.preventDefault(); prev(); }
   });
 
-  // Initialize prompts with a template so user sees what they are
-  setPrompts(buildPrompts());
-});
+  function h(tag, attrs={}, children=[]) {
+    const el = document.createElement(tag);
+    for (const [k,v] of Object.entries(attrs)) {
+      if (k === "class") el.className = v;
+      else if (k === "html") el.innerHTML = v;
+      else if (k.startsWith("on") && typeof v === "function") el.addEventListener(k.slice(2), v);
+      else el.setAttribute(k, v);
+    }
+    for (const c of children) el.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+    return el;
+  }
 
-/* ========== chart helper ========== */
-function clearChart(msg) {
-  Plotly.purge("chart");
-  Plotly.newPlot("chart", [], { margin: {t: 20, r: 10, b: 40, l: 50} }, {displaylogo:false, responsive:true});
-  el("chartCaption").textContent = msg;
-}
+  function fieldText({label, value, placeholder, onInput, hint}) {
+    const wrap = h("div");
+    wrap.appendChild(h("label", {}, [label]));
+    const input = h("input", { type:"text", value: value || "", placeholder: placeholder || "" });
+    input.addEventListener("input", (e) => onInput(e.target.value));
+    wrap.appendChild(input);
+    if (hint) wrap.appendChild(h("div", { class:"hint" }, [hint]));
+    return wrap;
+  }
+
+  function fieldArea({label, value, placeholder, onInput, hint, minHeight}) {
+    const wrap = h("div");
+    wrap.appendChild(h("label", {}, [label]));
+    const ta = h("textarea", { placeholder: placeholder || "" });
+    if (minHeight) ta.style.minHeight = minHeight;
+    ta.value = value || "";
+    ta.addEventListener("input", (e) => onInput(e.target.value));
+    wrap.appendChild(ta);
+    if (hint) wrap.appendChild(h("div", { class:"hint" }, [hint]));
+    return wrap;
+  }
+
+  function navButtons({showPrev=true, showNext=true, nextLabel="Next", prevLabel="Back"}) {
+    const row = h("div", { class:"btnRow" });
+    const left = h("div", { class:"btnGroup" });
+    const right = h("div", { class:"btnGroup" });
+
+    if (showPrev) left.appendChild(h("button", { type:"button", onclick: prev }, [prevLabel]));
+    if (showNext) right.appendChild(h("button", { type:"button", class:"primary", onclick: next }, [nextLabel]));
+
+    row.appendChild(left);
+    row.appendChild(right);
+    return row;
+  }
+
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, (m) => ({
+      "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
+    }[m]));
+  }
+
+  /** ---------- Step: Welcome ---------- **/
+  function renderWelcome(root){
+    root.appendChild(h("div",{class:"callout"},[
+      h("div",{class:"small", html:
+        `<strong>Outcome:</strong> you’ll end with AI-ready prompt texts tailored to your project:
+         (1) spec refinement, (2) diagram of system + impacts, (3) interactive HTML/JS illustration.`})
+    ]));
+
+    root.appendChild(fieldText({
+      label:"Project name",
+      value:model.meta.projectName,
+      placeholder:"e.g., BugBuddy",
+      onInput:(v)=>{ model.meta.projectName=v; scheduleSave(); buildNav(); updateProgressUI(); },
+      hint:"Tip: choose a name you’ll recognize later."
+    }));
+
+    root.appendChild(h("div",{class:"callout"},[
+      h("div",{class:"small", html:
+        `<strong>Keyboard:</strong> <span class="kbd">Alt</span> + <span class="kbd">←</span>/<span class="kbd">→</span>`})
+    ]));
+
+    root.appendChild(navButtons({showPrev:false, nextLabel:"Set up the project"}));
+  }
+
+  /** ---------- Step: Project ---------- **/
+  function renderProject(root){
+    root.appendChild(h("p",{class:"small"},[
+      "Make the project concrete. This will be embedded into the generated AI prompts."
+    ]));
+
+    const g = h("div",{class:"grid2"});
+    g.appendChild(fieldText({
+      label:"Project name",
+      value:model.meta.projectName,
+      placeholder:"Short name",
+      onInput:(v)=>{ model.meta.projectName=v; scheduleSave(); buildNav(); updateProgressUI(); }
+    }));
+
+    const stageWrap = h("div");
+    stageWrap.appendChild(h("label",{},["Project stage"]));
+    const sel = h("select");
+    [["idea","Idea / exploring"],["prototype","Prototype"],["mvp","MVP / first users"],["prod","In production"],["migration","Migration / rewrite"]]
+      .forEach(([val,label])=>{
+        const opt = h("option",{value:val},[label]);
+        if (model.meta.projectStage===val) opt.selected=true;
+        sel.appendChild(opt);
+      });
+    sel.addEventListener("change",(e)=>{ model.meta.projectStage=e.target.value; scheduleSave(); });
+    stageWrap.appendChild(sel);
+    stageWrap.appendChild(h("div",{class:"hint"},["Stage influences stakeholders, risks, and rollout."]));
+    g.appendChild(stageWrap);
+    root.appendChild(g);
+
+    root.appendChild(fieldArea({
+      label:"One-liner: what are you building and why?",
+      value:model.meta.projectOneLiner,
+      placeholder:"[who] does [what] so they can [benefit].",
+      onInput:(v)=>{ model.meta.projectOneLiner=v; scheduleSave(); buildNav(); updateProgressUI(); }
+    }));
+
+    root.appendChild(fieldArea({
+      label:"Primary users / beneficiaries",
+      value:model.meta.users,
+      placeholder:"Who uses it? Who benefits? Who might be affected indirectly?",
+      onInput:(v)=>{ model.meta.users=v; scheduleSave(); buildNav(); updateProgressUI(); }
+    }));
+
+    root.appendChild(fieldArea({
+      label:"Technical stack / environment",
+      value:model.meta.stack,
+      placeholder:"Languages, platforms, infra, dependencies, data sources, integrations…",
+      onInput:(v)=>{ model.meta.stack=v; scheduleSave(); }
+    }));
+
+    root.appendChild(fieldArea({
+      label:"Context & constraints",
+      value:model.meta.constraints,
+      placeholder:"Budget/time, deadlines, policies, performance, safety, compliance…",
+      onInput:(v)=>{ model.meta.constraints=v; scheduleSave(); }
+    }));
+
+    root.appendChild(navButtons({prevLabel:"Back", nextLabel:"Answer Anticipation questions"}));
+  }
+
+  /** ---------- Step: Anticipation ---------- **/
+  function qBlock({title, meta, tags, key, placeholder}) {
+    const [section, field] = key;
+    const block = h("div", { class:"qBlock" });
+    block.appendChild(h("p",{class:"qTitle"},[title]));
+    block.appendChild(h("p",{class:"qMeta"},[meta]));
+    if (tags?.length) {
+      const tr = h("div",{class:"tagRow"});
+      tags.forEach(t => tr.appendChild(h("span",{class:"tag"},[t])));
+      block.appendChild(tr);
+    }
+    block.appendChild(fieldArea({
+      label:"Your notes",
+      value:model[section][field],
+      placeholder,
+      onInput:(v)=>{ model[section][field]=v; scheduleSave(); buildNav(); updateProgressUI(); },
+      minHeight:"120px"
+    }));
+    return block;
+  }
+
+  function renderAnticipation(root){
+    const name = (model.meta.projectName || "your project").trim();
+    root.appendChild(h("div",{class:"callout"},[
+      h("div",{class:"small", html:
+        `<strong>Anticipation:</strong> explore plausible impacts and failure modes for <b>${escapeHtml(name)}</b>.
+         Your answers will be used to generate better AI prompts.`})
+    ]));
+
+    root.appendChild(qBlock({ title:"1) Intended outcomes",
+      meta:"What good are you trying to create? How will you measure it?",
+      tags:["benefits","metrics"],
+      key:["anticipate","intendedOutcomes"],
+      placeholder:"Positive outcomes + success measures."
+    }));
+    root.appendChild(qBlock({ title:"2) Stakeholders",
+      meta:"Who is affected directly or indirectly? Who benefits vs. who bears costs?",
+      tags:["stakeholders","power"],
+      key:["anticipate","stakeholders"],
+      placeholder:"List roles/groups; include non-users."
+    }));
+    root.appendChild(qBlock({ title:"3) Impacts & second-order effects",
+      meta:"What might change over months/years if it succeeds or scales?",
+      tags:["system effects","incentives"],
+      key:["anticipate","impacts"],
+      placeholder:"Downstream effects, behavior changes, organizational shifts."
+    }));
+    root.appendChild(qBlock({ title:"4) Failure modes & harm scenarios",
+      meta:"Reliability, outages, dependency failures, user error — worst plausible harms?",
+      tags:["failure","harm","resilience"],
+      key:["anticipate","risksFailures"],
+      placeholder:"List failure modes + plausible harms + rough likelihood."
+    }));
+    root.appendChild(qBlock({ title:"5) Misuse / abuse cases",
+      meta:"If someone wanted to exploit this, how could they?",
+      tags:["threat model","abuse"],
+      key:["anticipate","misuseAbuse"],
+      placeholder:"Abuse/misuse scenarios (insiders, attackers, gaming incentives...)."
+    }));
+    root.appendChild(qBlock({ title:"6) Data, privacy & security",
+      meta:"What data is collected/derived? Retention? Leakage? Attack surfaces?",
+      tags:["privacy","security","data lifecycle"],
+      key:["anticipate","dataPrivacySecurity"],
+      placeholder:"Data flow, sensitive data, key risks, security posture, mitigations."
+    }));
+    root.appendChild(qBlock({ title:"7) Fairness, accessibility & inclusion",
+      meta:"Who might be excluded or disproportionately impacted?",
+      tags:["fairness","a11y"],
+      key:["anticipate","fairnessInclusion"],
+      placeholder:"Bias/exclusion risks + how you'll reduce them."
+    }));
+    root.appendChild(qBlock({ title:"8) Environmental & social considerations (if relevant)",
+      meta:"Compute/energy, attention/behavioral impacts, community effects.",
+      tags:["environment","social"],
+      key:["anticipate","environmentalSocial"],
+      placeholder:"Any material environmental/social impacts and levers to improve."
+    }));
+    root.appendChild(qBlock({ title:"9) Legal / regulatory / policy constraints (if relevant)",
+      meta:"Note what must be verified with experts (don’t guess in high-stakes).",
+      tags:["legal","policy"],
+      key:["anticipate","legalRegulatory"],
+      placeholder:"Likely constraints: privacy law, sector rules, licensing, org policies."
+    }));
+    root.appendChild(qBlock({ title:"10) Uncertainties & assumptions",
+      meta:"What don't you know yet that matters?",
+      tags:["assumptions","unknowns"],
+      key:["anticipate","uncertaintiesAssumptions"],
+      placeholder:"Assumptions + evidence needed to confirm/deny."
+    }));
+    root.appendChild(qBlock({ title:"11) Alternatives",
+      meta:"Different ways to achieve the goal (including smaller/non-tech interventions).",
+      tags:["alternatives","scope"],
+      key:["anticipate","alternatives"],
+      placeholder:"Other solutions; minimum viable intervention."
+    }));
+    root.appendChild(qBlock({ title:"12) Mitigations & safeguards",
+      meta:"What will you actually implement to reduce risks?",
+      tags:["mitigation","controls"],
+      key:["anticipate","mitigations"],
+      placeholder:"Guardrails, defaults, oversight, logging, rollout strategy..."
+    }));
+    root.appendChild(qBlock({ title:"13) Go / No-Go triggers",
+      meta:"What would make you pause, redesign, or stop?",
+      tags:["monitoring","red lines"],
+      key:["anticipate","goNoGo"],
+      placeholder:"Signals/thresholds that trigger changes; monitoring plan."
+    }));
+
+    const ratio = completionAnticipation();
+    const msg = ratio >= 0.65
+      ? "Good coverage — generate prompts next."
+      : "Fill a bit more for best AI results (aim for 8–10 solid answers).";
+    root.appendChild(h("div",{class:"callout"},[
+      h("div",{class:"small", html:`<strong>Anticipation completeness:</strong> ${Math.round(ratio*100)}% • ${escapeHtml(msg)}`})
+    ]));
+
+    root.appendChild(navButtons({prevLabel:"Back", nextLabel:"Generate AI prompts"}));
+  }
+
+  /** ---------- Step: Prompts ---------- **/
+  function projectBrief() {
+    const m = model.meta, a = model.anticipate;
+    // Keep this reasonably sized but information-rich.
+    return [
+      `PROJECT NAME: ${m.projectName || "—"}`,
+      `STAGE: ${m.projectStage || "—"}`,
+      `ONE-LINER: ${m.projectOneLiner || "—"}`,
+      `PRIMARY USERS / BENEFICIARIES: ${m.users || "—"}`,
+      `STACK / ENVIRONMENT: ${m.stack || "—"}`,
+      `CONSTRAINTS / CONTEXT: ${m.constraints || "—"}`,
+      ``,
+      `ANTICIPATION NOTES`,
+      `- Intended outcomes: ${a.intendedOutcomes || "—"}`,
+      `- Stakeholders: ${a.stakeholders || "—"}`,
+      `- Impacts & second-order: ${a.impacts || "—"}`,
+      `- Failure modes & harms: ${a.risksFailures || "—"}`,
+      `- Misuse/abuse cases: ${a.misuseAbuse || "—"}`,
+      `- Data/privacy/security: ${a.dataPrivacySecurity || "—"}`,
+      `- Fairness/a11y/inclusion: ${a.fairnessInclusion || "—"}`,
+      `- Environmental/social: ${a.environmentalSocial || "—"}`,
+      `- Legal/policy: ${a.legalRegulatory || "—"}`,
+      `- Uncertainties/assumptions: ${a.uncertaintiesAssumptions || "—"}`,
+      `- Alternatives: ${a.alternatives || "—"}`,
+      `- Mitigations/safeguards: ${a.mitigations || "—"}`,
+      `- Go/No-Go triggers: ${a.goNoGo || "—"}`
+    ].join("\n");
+  }
+
+  function promptRefinement() {
+    return [
+`You are an expert product + software architect and a responsible-innovation reviewer.
+Given the project brief below, recommend refinements to the project specification.
+
+Requirements for your response:
+1) Write an improved project specification with: scope, non-goals, personas, user journeys, functional requirements, non-functional requirements, and acceptance criteria.
+2) Identify key risks (technical, security, privacy, safety, fairness/inclusion, misuse/abuse, operational, legal/policy) and propose concrete mitigations for each.
+3) Point out missing information and ask me the minimum set of clarifying questions (max 12).
+4) Provide a prioritized roadmap (Now / Next / Later) and a lightweight metrics + monitoring plan.
+5) Keep recommendations realistic for the stated constraints.
+
+PROJECT BRIEF
+${projectBrief()}`
+    ].join("\n");
+  }
+
+  function promptDiagram() {
+    return [
+`You are a systems thinker and technical communicator.
+Using the project brief below, create a diagram of the project and its impacts.
+
+Output format:
+A) A Mermaid diagram (prefer flowchart or C4-ish boxes) that includes:
+   - Users/stakeholders
+   - Core components/services
+   - Data stores and data flows (mark sensitive data)
+   - External integrations/dependencies
+   - Trust boundaries / threat surfaces
+B) A second Mermaid diagram focused on impacts:
+   - Intended outcomes
+   - Unintended impacts / second-order effects
+   - Failure modes & harm pathways
+   - Misuse/abuse pathways
+   - Safeguards/mitigations mapped to those pathways
+C) A short legend + 8–12 bullet annotations explaining the diagram choices and where uncertainty is highest.
+
+PROJECT BRIEF
+${projectBrief()}`
+    ].join("\n");
+  }
+
+  function promptInteractiveDemo() {
+    return [
+`You are a senior frontend engineer and educator.
+Based on the project brief below, generate a SINGLE-FILE HTML page (no build tools, no external assets) that interactively illustrates how the project works.
+
+Hard requirements:
+- Output ONLY the code for a complete HTML file.
+- Use vanilla HTML/CSS/JS (no frameworks).
+- Include mock data inside the file.
+- The demo must be interactive and explain itself (labels, inline help, example flows).
+- Include at least 3 user scenarios or flows relevant to the primary users.
+- Include at least 1 failure mode simulation and how a safeguard mitigates it (based on the brief).
+- Keep the code readable with comments and clear functions.
+- The UI should show: inputs → processing → outputs, and highlight data flows (including sensitive data, if any).
+- Add a small “Assumptions” panel listing assumptions you had to make, based on uncertainties in the brief.
+
+PROJECT BRIEF
+${projectBrief()}`
+    ].join("\n");
+  }
+
+  function allPromptsMarkdown() {
+    const name = model.meta.projectName || "project";
+    return [
+`# Generated GenAI Prompts — ${name}
+
+These prompts were generated from your AREA Anticipation reflection.
+
+---
+
+## Prompt 1 — Recommendations for refinements to the project specification
+
+\`\`\`
+${promptRefinement()}
+\`\`\`
+
+---
+
+## Prompt 2 — Diagram of the project and its impacts
+
+\`\`\`
+${promptDiagram()}
+\`\`\`
+
+---
+
+## Prompt 3 — Generate an interactive HTML/JavaScript program illustrating the project
+
+\`\`\`
+${promptInteractiveDemo()}
+\`\`\`
+
+Generated: ${new Date().toISOString()}
+`
+    ].join("\n");
+  }
+
+  async function copyText(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      saveIndicator.textContent = "copied ✓";
+      setTimeout(()=> saveIndicator.textContent = "saved", 900);
+    } catch {
+      alert("Copy failed (browser permission). Try downloading instead.");
+    }
+  }
+
+  function fileSafe(name){ return name.replace(/[^\w\-\.]+/g, "_").slice(0, 80); }
+  function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+
+  function renderPrompts(root){
+    const name = (model.meta.projectName || "your project").trim();
+
+    root.appendChild(h("div",{class:"callout"},[
+      h("div",{class:"small", html:
+        `<strong>Generated prompts:</strong> copy/paste these into your preferred AI model.
+         They are tailored to <b>${escapeHtml(name)}</b> using your Anticipation answers.`})
+    ]));
+
+    const prompts = [
+      { id:"refine", title:"Prompt 1 — Ask for refinements to the project specification", make: promptRefinement },
+      { id:"diagram", title:"Prompt 2 — Ask for a diagram of the project and its impacts", make: promptDiagram },
+      { id:"demo", title:"Prompt 3 — Ask for an interactive HTML/JS illustration program", make: promptInteractiveDemo }
+    ];
+
+    prompts.forEach(p => {
+      const text = p.make();
+      const block = h("div",{class:"qBlock"});
+      block.appendChild(h("p",{class:"qTitle"},[p.title]));
+      block.appendChild(h("div",{class:"btnGroup"},[
+        h("button",{type:"button", onclick:()=>copyText(text)},["Copy prompt"]),
+        h("button",{type:"button", onclick:()=>{
+          const blob = new Blob([text], {type:"text/plain;charset=utf-8"});
+          downloadBlob(blob, fileSafe(`${model.meta.projectName || "project"}-${p.id}-prompt.txt`));
+        }},["Download .txt"])
+      ]));
+      block.appendChild(h("div",{class:"promptBox"},[text]));
+      root.appendChild(block);
+    });
+
+    root.appendChild(h("div",{class:"qBlock"},[
+      h("p",{class:"qTitle"},["Download all prompts (Markdown)"]),
+      h("div",{class:"btnGroup"},[
+        h("button",{type:"button", class:"primary", onclick:()=>{
+          const blob = new Blob([allPromptsMarkdown()], {type:"text/markdown;charset=utf-8"});
+          downloadBlob(blob, fileSafe(`${model.meta.projectName || "project"}-genai-prompts.md`));
+        }},["Download .md"]),
+        h("button",{type:"button", onclick:()=>copyText(allPromptsMarkdown())},["Copy all as Markdown"])
+      ]),
+      h("div",{class:"foot"},[
+        "If a prompt feels too long for your model, remove the least relevant Anticipation bullets or ask the model to summarize the brief first."
+      ])
+    ]));
+
+    root.appendChild(navButtons({prevLabel:"Back", showNext:false}));
+  }
+
+  /** ---------- Render ---------- **/
+  function render(){
+    const step = steps[currentStepIndex];
+    buildNav(); updateProgressUI();
+    stepKicker.textContent = `Step ${currentStepIndex+1} of ${steps.length}`;
+    stepTitle.textContent = step.title;
+    stepBadge.textContent = step.badge;
+    content.innerHTML = "";
+    step.render(content);
+    [...stepList.querySelectorAll(".stepBtn")].forEach((b,i)=>{
+      if (i===currentStepIndex) b.setAttribute("aria-current","step");
+      else b.removeAttribute("aria-current");
+    });
+  }
+
+  $("#resetBtn").addEventListener("click",()=>{
+    const ok = confirm("Reset all saved answers for this app?");
+    if (!ok) return;
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  });
+
+  load();
+  currentStepIndex = model.meta.projectName ? 1 : 0;
+  render();
+})();
 </script>
 </body>
 </html>
