@@ -1,0 +1,1098 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AREA Framework Coach — Anticipation</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #111a33;
+      --panel2: #0f1730;
+      --text: #e9ecff;
+      --muted: #b9c0ff;
+      --faint: #7e89d6;
+      --accent: #7aa2ff;
+      --accent2: #67e8f9;
+      --danger: #fb7185;
+      --ok: #34d399;
+      --border: rgba(255,255,255,.10);
+      --shadow: 0 12px 30px rgba(0,0,0,.35);
+      --radius: 18px;
+      --radius2: 14px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      color: var(--text);
+      background:
+        radial-gradient(1200px 600px at 20% -10%, rgba(122,162,255,.25), transparent 60%),
+        radial-gradient(900px 500px at 90% 10%, rgba(103,232,249,.18), transparent 55%),
+        radial-gradient(900px 700px at 50% 120%, rgba(52,211,153,.10), transparent 55%),
+        var(--bg);
+      min-height: 100vh;
+    }
+    a { color: var(--accent2); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    header {
+      padding: 28px 18px 8px;
+      max-width: 1040px;
+      margin: 0 auto;
+    }
+    .title {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 14px;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(22px, 3vw, 34px);
+      letter-spacing: -0.02em;
+    }
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.45;
+      max-width: 80ch;
+    }
+
+    main {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 18px;
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 18px;
+    }
+    @media (max-width: 920px) {
+      main { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .card .hd {
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,.12);
+    }
+    .card .bd {
+      padding: 16px;
+    }
+
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 8px;
+    }
+    .stepBtn {
+      width: 100%;
+      text-align: left;
+      border: 1px solid var(--border);
+      background: rgba(15,23,48,.55);
+      color: var(--text);
+      border-radius: var(--radius2);
+      padding: 12px 12px;
+      cursor: pointer;
+      transition: transform .05s ease, background .2s ease;
+    }
+    .stepBtn:hover { background: rgba(15,23,48,.8); }
+    .stepBtn:active { transform: translateY(1px); }
+    .stepBtn[aria-current="step"] {
+      outline: 2px solid rgba(122,162,255,.45);
+      background: rgba(122,162,255,.14);
+    }
+    .stepTop {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .pill {
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      background: rgba(0,0,0,.18);
+      white-space: nowrap;
+    }
+    .pill.ok { color: var(--ok); border-color: rgba(52,211,153,.35); }
+    .pill.warn { color: #fde68a; border-color: rgba(253,230,138,.25); }
+
+    .progressWrap {
+      padding: 0 8px 12px;
+    }
+    .bar {
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .bar > div {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, rgba(122,162,255,.95), rgba(103,232,249,.9));
+      transition: width .35s ease;
+    }
+    .small {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .grid2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 700px) { .grid2 { grid-template-columns: 1fr; } }
+
+    label { display: block; font-weight: 650; margin: 10px 0 6px; }
+    input[type="text"], textarea, select {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: rgba(15,23,48,.55);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-size: 14px;
+      outline: none;
+    }
+    textarea { min-height: 110px; resize: vertical; }
+    input[type="text"]:focus, textarea:focus, select:focus {
+      border-color: rgba(122,162,255,.55);
+      box-shadow: 0 0 0 4px rgba(122,162,255,.12);
+    }
+
+    .hint {
+      margin-top: 6px;
+      font-size: 12.5px;
+      color: var(--faint);
+      line-height: 1.4;
+    }
+    .callout {
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,.14);
+      border-radius: var(--radius2);
+      padding: 12px;
+      margin: 12px 0;
+    }
+    .callout strong { color: var(--accent2); }
+
+    .btnRow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .btnGroup {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    button {
+      border: 1px solid var(--border);
+      background: rgba(15,23,48,.65);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: transform .05s ease, background .2s ease, border-color .2s ease;
+      font-weight: 650;
+    }
+    button:hover { background: rgba(15,23,48,.9); border-color: rgba(255,255,255,.18); }
+    button:active { transform: translateY(1px); }
+    button.primary {
+      background: linear-gradient(90deg, rgba(122,162,255,.95), rgba(103,232,249,.85));
+      color: #081027;
+      border-color: rgba(103,232,249,.35);
+    }
+    button.danger { border-color: rgba(251,113,133,.35); color: #ffd3da; }
+    .kbd {
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,.25);
+      color: var(--muted);
+    }
+    .foot {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--faint);
+      line-height: 1.4;
+    }
+
+    .qBlock {
+      border: 1px solid var(--border);
+      background: rgba(15,23,48,.35);
+      border-radius: var(--radius2);
+      padding: 12px;
+      margin: 12px 0;
+    }
+    .qTitle {
+      margin: 0 0 6px;
+      font-size: 15px;
+      letter-spacing: -0.01em;
+    }
+    .qMeta {
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.4;
+      margin: 0 0 10px;
+    }
+    .tagRow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 8px 0 0;
+    }
+    .tag {
+      font-size: 12px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,.18);
+      color: var(--muted);
+    }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(0,0,0,.16);
+    }
+    .status b { color: var(--accent2); }
+    .mono { font-family: var(--mono); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title">
+      <h1>AREA Framework Coach</h1>
+      <div class="pill mono" id="saveIndicator" title="Autosave status">saved</div>
+    </div>
+    <p class="subtitle">
+      A lightweight reflection app for software developers. Choose a project, then work through
+      the AREA framework. This version focuses on <b>Anticipation</b> — exploring intended and unintended impacts.
+    </p>
+  </header>
+
+  <main>
+    <!-- LEFT: navigation -->
+    <section class="card" aria-label="Steps navigation">
+      <div class="hd">
+        <div class="status">
+          <div>
+            <div class="small">Progress</div>
+            <div><b id="pct">0%</b> complete</div>
+          </div>
+          <div class="kbd" title="Keyboard tip">Alt + ← / →</div>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="progressWrap">
+          <div class="bar" aria-label="Completion bar"><div id="barFill"></div></div>
+          <div class="foot" id="progressNote"></div>
+        </div>
+
+        <div class="steps" role="list" id="stepList"></div>
+
+        <div class="callout">
+          <div class="small">
+            Tip: keep answers concrete (names, groups, environments, failure modes, timelines).
+            If you’re stuck, write assumptions and uncertainties.
+          </div>
+        </div>
+
+        <button class="danger" id="resetBtn" title="Clears saved data for this app">Reset all</button>
+        <div class="foot">
+          Data is stored only in your browser (<span class="mono">localStorage</span>).
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: content -->
+    <section class="card" aria-label="Step content">
+      <div class="hd">
+        <div style="display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap;">
+          <div>
+            <div class="small" id="stepKicker">Step</div>
+            <div style="font-size:20px; font-weight:800; letter-spacing:-.01em;" id="stepTitle">—</div>
+          </div>
+          <div class="pill" id="stepBadge">—</div>
+        </div>
+      </div>
+      <div class="bd" id="content"></div>
+    </section>
+  </main>
+
+<script>
+(() => {
+  const STORAGE_KEY = "area-coach-v1";
+
+  /** ---------- Model ---------- **/
+  const model = {
+    meta: {
+      projectName: "",
+      projectOneLiner: "",
+      projectStage: "idea",
+      stack: "",
+      users: "",
+      context: "",
+      constraints: "",
+      dateStarted: new Date().toISOString()
+    },
+    anticipate: {
+      intendedOutcomes: "",
+      stakeholders: "",
+      impacts: "",
+      risksFailures: "",
+      misuseAbuse: "",
+      dataPrivacySecurity: "",
+      fairnessInclusion: "",
+      environmentalSocial: "",
+      legalRegulatory: "",
+      uncertaintiesAssumptions: "",
+      alternatives: "",
+      mitigations: "",
+      goNoGo: ""
+    },
+    // placeholders for later steps (kept minimal for this request)
+    reflect: { notes: "" },
+    engage: { notes: "" },
+    act: { notes: "" }
+  };
+
+  /** ---------- Steps ---------- **/
+  const steps = [
+    {
+      id: "welcome",
+      title: "Welcome & how this works",
+      badge: "Start",
+      render: renderWelcome,
+      isComplete: () => model.meta.projectName.trim().length > 0
+    },
+    {
+      id: "project",
+      title: "Your project (context)",
+      badge: "Setup",
+      render: renderProject,
+      isComplete: () =>
+        model.meta.projectName.trim().length > 0 &&
+        model.meta.projectOneLiner.trim().length > 0 &&
+        model.meta.users.trim().length > 0
+    },
+    {
+      id: "area",
+      title: "AREA overview",
+      badge: "Framework",
+      render: renderAreaOverview,
+      isComplete: () => true
+    },
+    {
+      id: "anticipate",
+      title: "Anticipation — critical questions",
+      badge: "Deep dive",
+      render: renderAnticipation,
+      isComplete: () => completionAnticipation() >= 0.65
+    },
+    {
+      id: "export",
+      title: "Export & next steps",
+      badge: "Wrap",
+      render: renderExport,
+      isComplete: () => true
+    }
+  ];
+
+  /** ---------- State + DOM ---------- **/
+  let currentStepIndex = 0;
+
+  const $ = (sel) => document.querySelector(sel);
+  const stepList = $("#stepList");
+  const content = $("#content");
+  const stepTitle = $("#stepTitle");
+  const stepKicker = $("#stepKicker");
+  const stepBadge = $("#stepBadge");
+  const saveIndicator = $("#saveIndicator");
+  const pct = $("#pct");
+  const barFill = $("#barFill");
+  const progressNote = $("#progressNote");
+
+  /** ---------- Persistence ---------- **/
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      deepAssign(model, parsed);
+    } catch (e) {
+      console.warn("Failed to load saved data:", e);
+    }
+  }
+
+  function save() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(model, null, 2));
+      flashSaved();
+    } catch (e) {
+      console.warn("Failed to save:", e);
+      saveIndicator.textContent = "save failed";
+      saveIndicator.style.borderColor = "rgba(251,113,133,.35)";
+      saveIndicator.style.color = "#ffd3da";
+    }
+  }
+
+  function deepAssign(target, src) {
+    if (!src || typeof src !== "object") return;
+    for (const k of Object.keys(src)) {
+      if (src[k] && typeof src[k] === "object" && !Array.isArray(src[k])) {
+        if (!target[k]) target[k] = {};
+        deepAssign(target[k], src[k]);
+      } else if (k in target) {
+        target[k] = src[k];
+      }
+    }
+  }
+
+  let saveTimer = null;
+  function scheduleSave() {
+    saveIndicator.textContent = "saving…";
+    saveIndicator.className = "pill mono";
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(save, 250);
+  }
+
+  function flashSaved() {
+    saveIndicator.textContent = "saved";
+    saveIndicator.className = "pill mono";
+    saveIndicator.style.borderColor = "rgba(52,211,153,.35)";
+    saveIndicator.style.color = "var(--ok)";
+    setTimeout(() => {
+      saveIndicator.style.borderColor = "";
+      saveIndicator.style.color = "";
+    }, 650);
+  }
+
+  /** ---------- Completion ---------- **/
+  function completionAnticipation() {
+    const a = model.anticipate;
+    const fields = [
+      a.intendedOutcomes,
+      a.stakeholders,
+      a.impacts,
+      a.risksFailures,
+      a.misuseAbuse,
+      a.dataPrivacySecurity,
+      a.fairnessInclusion,
+      a.environmentalSocial,
+      a.uncertaintiesAssumptions,
+      a.mitigations,
+      a.goNoGo
+    ];
+    const filled = fields.filter(v => (v || "").trim().length >= 20).length;
+    return filled / fields.length;
+  }
+
+  function overallCompletion() {
+    const completeCount = steps.filter(s => s.isComplete()).length;
+    return completeCount / steps.length;
+  }
+
+  function updateProgressUI() {
+    const ratio = overallCompletion();
+    const percent = Math.round(ratio * 100);
+    pct.textContent = `${percent}%`;
+    barFill.style.width = `${percent}%`;
+
+    const next = steps.find(s => !s.isComplete());
+    progressNote.textContent = next
+      ? `Next: ${next.title}`
+      : `Nice — you’ve got a solid first pass. Export it and iterate.`;
+  }
+
+  /** ---------- Navigation ---------- **/
+  function buildNav() {
+    stepList.innerHTML = "";
+    steps.forEach((s, i) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "stepBtn";
+      btn.setAttribute("role", "listitem");
+      btn.onclick = () => goTo(i);
+
+      const top = document.createElement("div");
+      top.className = "stepTop";
+
+      const left = document.createElement("div");
+      left.style.display = "flex";
+      left.style.flexDirection = "column";
+      left.style.gap = "3px";
+
+      const t = document.createElement("div");
+      t.style.fontWeight = "850";
+      t.style.letterSpacing = "-.01em";
+      t.textContent = s.title;
+
+      const small = document.createElement("div");
+      small.className = "small";
+      small.textContent = s.badge;
+
+      left.appendChild(t);
+      left.appendChild(small);
+
+      const pill = document.createElement("div");
+      pill.className = "pill " + (s.isComplete() ? "ok" : "warn");
+      pill.textContent = s.isComplete() ? "ready" : "in progress";
+
+      top.appendChild(left);
+      top.appendChild(pill);
+
+      btn.appendChild(top);
+
+      if (i === currentStepIndex) btn.setAttribute("aria-current", "step");
+      stepList.appendChild(btn);
+    });
+  }
+
+  function goTo(i) {
+    currentStepIndex = Math.max(0, Math.min(steps.length - 1, i));
+    render();
+  }
+
+  function next() { goTo(currentStepIndex + 1); }
+  function prev() { goTo(currentStepIndex - 1); }
+
+  window.addEventListener("keydown", (e) => {
+    // Alt + arrows for step navigation
+    if (!e.altKey) return;
+    if (e.key === "ArrowRight") { e.preventDefault(); next(); }
+    if (e.key === "ArrowLeft") { e.preventDefault(); prev(); }
+  });
+
+  /** ---------- Rendering helpers ---------- **/
+  function h(tag, attrs = {}, children = []) {
+    const el = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (k === "class") el.className = v;
+      else if (k === "html") el.innerHTML = v;
+      else if (k.startsWith("on") && typeof v === "function") el.addEventListener(k.slice(2), v);
+      else el.setAttribute(k, v);
+    }
+    for (const c of children) el.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+    return el;
+  }
+
+  function fieldText({label, value, placeholder, onInput, hint}) {
+    const wrap = h("div");
+    wrap.appendChild(h("label", {}, [label]));
+    const input = h("input", { type:"text", value: value || "", placeholder: placeholder || "" });
+    input.addEventListener("input", (e) => onInput(e.target.value));
+    wrap.appendChild(input);
+    if (hint) wrap.appendChild(h("div", { class:"hint" }, [hint]));
+    return wrap;
+  }
+
+  function fieldArea({label, value, placeholder, onInput, hint, minHeight}) {
+    const wrap = h("div");
+    wrap.appendChild(h("label", {}, [label]));
+    const ta = h("textarea", { placeholder: placeholder || "" });
+    if (minHeight) ta.style.minHeight = minHeight;
+    ta.value = value || "";
+    ta.addEventListener("input", (e) => onInput(e.target.value));
+    wrap.appendChild(ta);
+    if (hint) wrap.appendChild(h("div", { class:"hint" }, [hint]));
+    return wrap;
+  }
+
+  function navButtons({showPrev=true, showNext=true, nextLabel="Next", prevLabel="Back"}) {
+    const row = h("div", { class:"btnRow" });
+    const left = h("div", { class:"btnGroup" });
+    const right = h("div", { class:"btnGroup" });
+
+    if (showPrev) left.appendChild(h("button", { type:"button", onclick: prev }, [prevLabel]));
+    if (showNext) right.appendChild(h("button", { type:"button", class:"primary", onclick: next }, [nextLabel]));
+
+    row.appendChild(left);
+    row.appendChild(right);
+    return row;
+  }
+
+  /** ---------- Step renders ---------- **/
+  function renderWelcome(root) {
+    root.appendChild(h("div", { class:"callout" }, [
+      h("div", { class:"small" , html:
+        `<strong>Goal:</strong> help you anticipate impacts around your software project (including unintended ones),
+         then make your later design choices more responsible and robust.` })
+    ]));
+
+    root.appendChild(h("p", { class:"small" }, [
+      "You’ll first describe a project you want to build. Then you’ll work through the ",
+      h("b", {}, ["AREA framework"]),
+      " and answer critical Anticipation questions, with exports you can paste into a README or design doc."
+    ]));
+
+    root.appendChild(fieldText({
+      label: "Project name (you can change this later)",
+      value: model.meta.projectName,
+      placeholder: "e.g., 'BugBuddy' or 'Internal Release Tracker'",
+      onInput: (v) => { model.meta.projectName = v; scheduleSave(); buildNav(); updateProgressUI(); },
+      hint: "Tip: pick a name you’ll recognize in 2 weeks."
+    }));
+
+    root.appendChild(h("div", { class:"callout" }, [
+      h("div", { class:"small", html:
+        `<strong>Keyboard:</strong> use <span class="kbd">Alt</span> + <span class="kbd">←</span>/<span class="kbd">→</span> to move between steps.` })
+    ]));
+
+    root.appendChild(navButtons({showPrev:false, nextLabel:"Set up the project"}));
+  }
+
+  function renderProject(root) {
+    root.appendChild(h("p", { class:"small" }, [
+      "Make the project concrete. The more specific this is, the better your Anticipation answers will be."
+    ]));
+
+    const g = h("div", { class:"grid2" });
+
+    g.appendChild(fieldText({
+      label: "Project name",
+      value: model.meta.projectName,
+      placeholder: "Short name",
+      onInput: (v) => { model.meta.projectName = v; scheduleSave(); buildNav(); updateProgressUI(); }
+    }));
+
+    const stageWrap = h("div");
+    stageWrap.appendChild(h("label", {}, ["Project stage"]));
+    const sel = h("select");
+    const stages = [
+      ["idea","Idea / exploring"],
+      ["prototype","Prototype"],
+      ["mvp","MVP / first users"],
+      ["prod","In production"],
+      ["migration","Migration / rewrite"]
+    ];
+    stages.forEach(([val, label]) => {
+      const opt = h("option", { value: val }, [label]);
+      if (model.meta.projectStage === val) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener("change", (e) => { model.meta.projectStage = e.target.value; scheduleSave(); });
+    stageWrap.appendChild(sel);
+    stageWrap.appendChild(h("div", { class:"hint" }, ["Your stage affects risks, stakeholders, and timelines."]));
+    g.appendChild(stageWrap);
+
+    root.appendChild(g);
+
+    root.appendChild(fieldArea({
+      label: "One-liner: what are you building and why?",
+      value: model.meta.projectOneLiner,
+      placeholder: "e.g., 'A VS Code extension that flags insecure secrets in commits to reduce incident risk.'",
+      onInput: (v) => { model.meta.projectOneLiner = v; scheduleSave(); buildNav(); updateProgressUI(); },
+      hint: "Try: [who] does [what] so they can [benefit]."
+    }));
+
+    root.appendChild(fieldArea({
+      label: "Primary users / beneficiaries (be specific)",
+      value: model.meta.users,
+      placeholder: "Who will use it? Who gains value? (roles, orgs, communities, customer segments)",
+      onInput: (v) => { model.meta.users = v; scheduleSave(); buildNav(); updateProgressUI(); }
+    }));
+
+    root.appendChild(fieldArea({
+      label: "Technical stack / environment",
+      value: model.meta.stack,
+      placeholder: "Languages, platforms, infra, dependencies, data sources, integrations…",
+      onInput: (v) => { model.meta.stack = v; scheduleSave(); }
+    }));
+
+    root.appendChild(fieldArea({
+      label: "Context & constraints",
+      value: model.meta.constraints,
+      placeholder: "Budget/time, deadlines, policies, team skills, performance, safety, compliance…",
+      onInput: (v) => { model.meta.constraints = v; scheduleSave(); }
+    }));
+
+    root.appendChild(navButtons({prevLabel:"Back", nextLabel:"See AREA overview"}));
+  }
+
+  function renderAreaOverview(root) {
+    const name = (model.meta.projectName || "your project").trim();
+
+    root.appendChild(h("div", { class:"callout" }, [
+      h("div", { class:"small", html:
+        `<strong>AREA</strong> is commonly used in Responsible Research & Innovation:
+         <b>Anticipate</b> impacts, <b>Reflect</b> on motivations/assumptions, <b>Engage</b> stakeholders,
+         then <b>Act</b> (change the work in response).` })
+    ]));
+
+    root.appendChild(h("p", { class:"small" }, [
+      "For ", h("b", {}, [name]), ", we’ll focus on Anticipation first: exploring intended + unintended impacts, plausible misuses, and what could go wrong — before you write more code."
+    ]));
+
+    root.appendChild(h("div", { class:"qBlock" }, [
+      h("p", { class:"qTitle" }, ["Anticipate"]),
+      h("p", { class:"qMeta" }, ["Explore possible impacts (good and bad), including uncertainties; consider who is affected and what failure looks like."]),
+      h("div", { class:"tagRow" }, [h("span", { class:"tag" }, ["impacts"]), h("span", { class:"tag" }, ["risks"]), h("span", { class:"tag" }, ["misuse"]), h("span", { class:"tag" }, ["uncertainty"])])
+    ]));
+
+    root.appendChild(h("div", { class:"qBlock" }, [
+      h("p", { class:"qTitle" }, ["Reflect"]),
+      h("p", { class:"qMeta" }, ["Interrogate your motivations, values, assumptions, and blind spots (technical + ethical)."])
+    ]));
+
+    root.appendChild(h("div", { class:"qBlock" }, [
+      h("p", { class:"qTitle" }, ["Engage"]),
+      h("p", { class:"qMeta" }, ["Talk to people who might be affected; test scenarios; invite critique; broaden perspectives."])
+    ]));
+
+    root.appendChild(h("div", { class:"qBlock" }, [
+      h("p", { class:"qTitle" }, ["Act"]),
+      h("p", { class:"qMeta" }, ["Change design, scope, safeguards, rollout, documentation, or even the goal, based on what you learned."])
+    ]));
+
+    root.appendChild(navButtons({prevLabel:"Back", nextLabel:"Start Anticipation questions"}));
+  }
+
+  function renderAnticipation(root) {
+    const name = (model.meta.projectName || "your project").trim();
+
+    root.appendChild(h("div", { class:"callout" }, [
+      h("div", { class:"small", html:
+        `<strong>Anticipation</strong> isn’t about perfect prediction.
+         It’s about exploring plausible impacts (intended and unintended) for <b>${escapeHtml(name)}</b>
+         so you can design and ship more responsibly.` })
+    ]));
+
+    // Question blocks (critical prompts)
+    root.appendChild(qBlock({
+      title: "1) Intended outcomes (what good are you trying to create?)",
+      meta: "Be concrete: what changes for users, the team, the business, or society?",
+      tags: ["benefits","outcomes","metrics"],
+      key: ["anticipate","intendedOutcomes"],
+      placeholder: "Describe the positive outcomes you expect. How will you know it’s working?"
+    }));
+
+    root.appendChild(qBlock({
+      title: "2) Stakeholders (who is affected — directly or indirectly?)",
+      meta: "Include non-users: people impacted by decisions, data, automation, or organizational changes.",
+      tags: ["stakeholders","power","externalities"],
+      key: ["anticipate","stakeholders"],
+      placeholder: "List groups/roles. Who benefits? Who might be burdened? Who has less power in this system?"
+    }));
+
+    root.appendChild(qBlock({
+      title: "3) Impacts & second-order effects",
+      meta: "Think beyond your first release: what might change over months/years? What behaviors could it create?",
+      tags: ["second-order","system effects","incentives"],
+      key: ["anticipate","impacts"],
+      placeholder: "What downstream effects could happen if this succeeds, scales, or becomes standard practice?"
+    }));
+
+    root.appendChild(qBlock({
+      title: "4) Failure modes & harm scenarios (what could go wrong?)",
+      meta: "Consider reliability, safety, user error, dependency failures, outages, and organizational misuse.",
+      tags: ["failure","harm","resilience"],
+      key: ["anticipate","risksFailures"],
+      placeholder: "List realistic failure modes. For each, what’s the worst plausible harm and how likely is it?"
+    }));
+
+    root.appendChild(qBlock({
+      title: "5) Misuse / abuse cases",
+      meta: "If a motivated actor wanted to cause harm or gain unfair advantage, how might they use this?",
+      tags: ["abuse","threat model","adversaries"],
+      key: ["anticipate","misuseAbuse"],
+      placeholder: "Describe misuse cases (malicious insiders, external attackers, scraping, coercion, gaming the system…)."
+    }));
+
+    root.appendChild(qBlock({
+      title: "6) Data, privacy & security implications",
+      meta: "What data is collected/derived? What happens if it leaks? What if it’s wrong? What’s the retention story?",
+      tags: ["privacy","security","data lifecycle"],
+      key: ["anticipate","dataPrivacySecurity"],
+      placeholder: "Map the data flow. Identify sensitive data, attack surfaces, authz/authn risks, and mitigations."
+    }));
+
+    root.appendChild(qBlock({
+      title: "7) Fairness, accessibility & inclusion",
+      meta: "Who might be excluded? Who might be disproportionately impacted? What accessibility needs exist?",
+      tags: ["fairness","a11y","inclusion"],
+      key: ["anticipate","fairnessInclusion"],
+      placeholder: "Describe potential bias/exclusion and what you’ll do to reduce it (testing, design, support)."
+    }));
+
+    root.appendChild(qBlock({
+      title: "8) Environmental & social considerations (if relevant)",
+      meta: "Compute costs, energy, supply chains (devices), attention/behavioral effects, community impacts.",
+      tags: ["environment","social"],
+      key: ["anticipate","environmentalSocial"],
+      placeholder: "Any meaningful environmental or social impacts? What levers do you have (efficiency, hosting, UX)?"
+    }));
+
+    root.appendChild(qBlock({
+      title: "9) Legal / regulatory / policy constraints (if relevant)",
+      meta: "Don’t guess in high-stakes contexts — note what you need to verify with experts.",
+      tags: ["legal","policy","compliance"],
+      key: ["anticipate","legalRegulatory"],
+      placeholder: "List any likely constraints: IP, licensing, privacy law, sector rules, org policies, audit needs."
+    }));
+
+    root.appendChild(qBlock({
+      title: "10) Uncertainties & assumptions",
+      meta: "Name what you don’t know yet. These are often your biggest risks.",
+      tags: ["assumptions","unknowns"],
+      key: ["anticipate","uncertaintiesAssumptions"],
+      placeholder: "What assumptions are you making? What evidence would confirm/deny them?"
+    }));
+
+    root.appendChild(qBlock({
+      title: "11) Alternatives (different ways to achieve the goal)",
+      meta: "Sometimes a smaller change, different UX, or non-technical intervention is safer and more effective.",
+      tags: ["alternatives","scope","non-tech"],
+      key: ["anticipate","alternatives"],
+      placeholder: "What other solutions exist? What’s the minimum intervention that still helps?"
+    }));
+
+    root.appendChild(qBlock({
+      title: "12) Mitigations & safeguards (design choices you’ll actually implement)",
+      meta: "Tie mitigations to earlier harms/failure modes: guardrails, defaults, rate limits, human oversight, logging, transparency.",
+      tags: ["mitigation","controls","guardrails"],
+      key: ["anticipate","mitigations"],
+      placeholder: "What will you build/do to reduce risk? (tech controls + process controls + rollout strategy)"
+    }));
+
+    root.appendChild(qBlock({
+      title: "13) Go / No-Go triggers (when should you pause, redesign, or stop?)",
+      meta: "Define red lines and monitoring signals early. Include “needs more evidence” gates.",
+      tags: ["go/no-go","monitoring","ethics"],
+      key: ["anticipate","goNoGo"],
+      placeholder: "What would make you halt or change course? What metrics/incidents/feedback would trigger action?"
+    }));
+
+    const ratio = completionAnticipation();
+    const msg = ratio >= 0.65
+      ? "Nice — you’ve answered enough to have a working Anticipation map. Export and iterate."
+      : "Aim for ~8–10 solid answers (20+ chars each) to get a useful first pass.";
+
+    root.appendChild(h("div", { class:"callout" }, [
+      h("div", { class:"small", html: `<strong>Anticipation completeness:</strong> ${(Math.round(ratio*100))}% • ${escapeHtml(msg)}` })
+    ]));
+
+    root.appendChild(navButtons({prevLabel:"Back", nextLabel:"Export my reflection"}));
+  }
+
+  function qBlock({title, meta, tags, key, placeholder}) {
+    const [section, field] = key;
+    const block = h("div", { class:"qBlock" });
+
+    block.appendChild(h("p", { class:"qTitle" }, [title]));
+    block.appendChild(h("p", { class:"qMeta" }, [meta]));
+
+    if (tags && tags.length) {
+      const tr = h("div", { class:"tagRow" });
+      tags.forEach(t => tr.appendChild(h("span", { class:"tag" }, [t])));
+      block.appendChild(tr);
+    }
+
+    block.appendChild(fieldArea({
+      label: "Your notes",
+      value: model[section][field],
+      placeholder,
+      onInput: (v) => {
+        model[section][field] = v;
+        scheduleSave();
+        buildNav();
+        updateProgressUI();
+      },
+      minHeight: "120px"
+    }));
+
+    return block;
+  }
+
+  function renderExport(root) {
+    root.appendChild(h("p", { class:"small" }, [
+      "Export your answers to share with a mentor, add to a design doc, or keep as a living risk/impact register."
+    ]));
+
+    const btns = h("div", { class:"btnGroup" });
+    btns.appendChild(h("button", { type:"button", class:"primary", onclick: exportMarkdown }, ["Download Markdown (.md)"]));
+    btns.appendChild(h("button", { type:"button", onclick: exportJson }, ["Download JSON (.json)"]));
+    btns.appendChild(h("button", { type:"button", onclick: copyMarkdown }, ["Copy Markdown"]));
+    root.appendChild(btns);
+
+    root.appendChild(h("div", { class:"callout" }, [
+      h("div", { class:"small", html:
+        `<strong>Next:</strong> after Anticipation, you’d typically move to <b>Reflect</b> (values/assumptions),
+         <b>Engage</b> (stakeholder conversations), then <b>Act</b> (change the plan + add safeguards).` })
+    ]));
+
+    root.appendChild(h("div", { class:"foot" }, [
+      "Reminder: this tool is for learning and reflection; for legal/compliance decisions, consult appropriate experts."
+    ]));
+
+    root.appendChild(navButtons({prevLabel:"Back", showNext:false}));
+  }
+
+  /** ---------- Export ---------- **/
+  function mkMarkdown() {
+    const m = model.meta;
+    const a = model.anticipate;
+
+    const md = [];
+    md.push(`# AREA Reflection — Anticipation`);
+    md.push(``);
+    md.push(`## Project`);
+    md.push(`- **Name:** ${m.projectName || "—"}`);
+    md.push(`- **Stage:** ${m.projectStage || "—"}`);
+    md.push(`- **One-liner:** ${m.projectOneLiner || "—"}`);
+    md.push(`- **Primary users:** ${m.users || "—"}`);
+    md.push(`- **Stack/environment:** ${m.stack || "—"}`);
+    md.push(`- **Constraints/context:** ${m.constraints || "—"}`);
+    md.push(``);
+    md.push(`## Anticipation (critical questions)`);
+    md.push(`### 1) Intended outcomes`);
+    md.push(a.intendedOutcomes || "—");
+    md.push(``);
+    md.push(`### 2) Stakeholders`);
+    md.push(a.stakeholders || "—");
+    md.push(``);
+    md.push(`### 3) Impacts & second-order effects`);
+    md.push(a.impacts || "—");
+    md.push(``);
+    md.push(`### 4) Failure modes & harm scenarios`);
+    md.push(a.risksFailures || "—");
+    md.push(``);
+    md.push(`### 5) Misuse / abuse cases`);
+    md.push(a.misuseAbuse || "—");
+    md.push(``);
+    md.push(`### 6) Data, privacy & security`);
+    md.push(a.dataPrivacySecurity || "—");
+    md.push(``);
+    md.push(`### 7) Fairness, accessibility & inclusion`);
+    md.push(a.fairnessInclusion || "—");
+    md.push(``);
+    md.push(`### 8) Environmental & social considerations`);
+    md.push(a.environmentalSocial || "—");
+    md.push(``);
+    md.push(`### 9) Legal / regulatory / policy constraints`);
+    md.push(a.legalRegulatory || "—");
+    md.push(``);
+    md.push(`### 10) Uncertainties & assumptions`);
+    md.push(a.uncertaintiesAssumptions || "—");
+    md.push(``);
+    md.push(`### 11) Alternatives`);
+    md.push(a.alternatives || "—");
+    md.push(``);
+    md.push(`### 12) Mitigations & safeguards`);
+    md.push(a.mitigations || "—");
+    md.push(``);
+    md.push(`### 13) Go / No-Go triggers`);
+    md.push(a.goNoGo || "—");
+    md.push(``);
+    md.push(`---`);
+    md.push(`Generated: ${new Date().toISOString()}`);
+    return md.join("\n");
+  }
+
+  function exportMarkdown() {
+    const blob = new Blob([mkMarkdown()], { type: "text/markdown;charset=utf-8" });
+    downloadBlob(blob, fileSafe(`${model.meta.projectName || "area-anticipation"}.md`));
+  }
+
+  function exportJson() {
+    const blob = new Blob([JSON.stringify(model, null, 2)], { type: "application/json;charset=utf-8" });
+    downloadBlob(blob, fileSafe(`${model.meta.projectName || "area-anticipation"}.json`));
+  }
+
+  async function copyMarkdown() {
+    const text = mkMarkdown();
+    try {
+      await navigator.clipboard.writeText(text);
+      saveIndicator.textContent = "copied ✓";
+      setTimeout(() => (saveIndicator.textContent = "saved"), 900);
+    } catch {
+      alert("Copy failed (browser permission). Use the download button instead.");
+    }
+  }
+
+  function fileSafe(name) {
+    return name.replace(/[^\w\-\.]+/g, "_").slice(0, 80);
+  }
+
+  function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+
+  /** ---------- Utilities ---------- **/
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, (m) => ({
+      "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
+    }[m]));
+  }
+
+  /** ---------- Main render ---------- **/
+  function render() {
+    const step = steps[currentStepIndex];
+    buildNav();
+    updateProgressUI();
+
+    stepKicker.textContent = `Step ${currentStepIndex + 1} of ${steps.length}`;
+    stepTitle.textContent = step.title;
+    stepBadge.textContent = step.badge;
+
+    content.innerHTML = "";
+    step.render(content);
+
+    // Update aria-current
+    [...stepList.querySelectorAll(".stepBtn")].forEach((b, i) => {
+      if (i === currentStepIndex) b.setAttribute("aria-current","step");
+      else b.removeAttribute("aria-current");
+    });
+  }
+
+  /** ---------- Reset ---------- **/
+  $("#resetBtn").addEventListener("click", () => {
+    const ok = confirm("Reset all saved answers for this app?");
+    if (!ok) return;
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  });
+
+  /** ---------- Init ---------- **/
+  load();
+  // If project name already exists, start at anticipation for convenience
+  currentStepIndex = model.meta.projectName ? 2 : 0;
+  render();
+})();
+</script>
+</body>
+</html>
