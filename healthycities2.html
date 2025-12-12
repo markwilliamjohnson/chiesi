@@ -71,7 +71,7 @@
 <body>
 <header>
   <h1>Guided Data Analysis (Beginner-Friendly) — Healthy Cities Exemplar</h1>
-  <div class="sub">A tiny embedded dataset + step-by-step “what/why/questions to ask” walkthrough</div>
+  <div class="sub">Embedded dataset + step-by-step “what/why/questions to ask” walkthrough</div>
 </header>
 
 <main>
@@ -79,8 +79,8 @@
     <div class="card">
       <div style="font-weight:800; font-size:13px;">What you’re looking at</div>
       <div class="muted" style="margin-top:8px;">
-        This app uses a <b>small example dataset</b> that mimics how “real” city datasets are often stored:
-        as a <b>long table</b> where each row is one measurement.
+        This app uses a <b>small example dataset</b> that mimics how city datasets are stored:
+        a <b>long table</b> where each row is one measurement.
         <br/><br/>
         You don’t need any prior data knowledge. The steps teach:
         <b>what to do</b>, <b>why it matters</b>, and <b>what questions to ask</b>.
@@ -132,7 +132,6 @@
       <div class="muted" style="margin-top:6px;">
         Once you build the wide table, you’ll run a simple check:
         <br/>• <b>Tobacco availability</b> vs <b>Asthma expenditure</b>
-        <br/>to practice turning a question into an analysis.
       </div>
       <div class="row" style="margin-top:10px;">
         <button id="btnRunExp" disabled>Run correlation</button>
@@ -149,11 +148,9 @@
 
     <div class="split">
       <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:10px;">
-          <div>
-            <div style="font-weight:900; font-size:13px;">Spreadsheet</div>
-            <div class="muted" id="gridCaption">Long table view (raw measurements).</div>
-          </div>
+        <div>
+          <div style="font-weight:900; font-size:13px;">Spreadsheet</div>
+          <div class="muted" id="gridCaption">Long table view (raw measurements).</div>
         </div>
         <div style="margin-top:10px;" id="grid"></div>
       </div>
@@ -179,11 +176,9 @@
     <div class="card">
       <div style="font-weight:900; font-size:13px;">Cheat sheet: Long vs Wide tables</div>
       <div class="muted" style="margin-top:8px;">
-        <b>Long table</b> (raw): many rows per area, because each metric and time period is a separate row.
+        <b>Long table</b>: many rows per area, because each metric and time period is a separate row.
         <br/>
-        <b>Wide table</b> (analysis-ready): one row per area (MSOA) with separate columns for the metrics you want.
-        <br/><br/>
-        Analysts often switch between them: long for storage + flexibility, wide for analysis.
+        <b>Wide table</b>: one row per area (MSOA) with separate columns for the metrics you want.
       </div>
     </div>
   </section>
@@ -192,51 +187,45 @@
 <script>
 /* -----------------------------
    Embedded exemplar dataset
-   -----------------------------
-   This mimics a “Healthy Cities” style long table:
-   - One row = one measurement
-   - Categories describe what the measurement is
-   - City/MSOA identify where it is
-   - Time identifies when it is (or "None" if not a time series)
-*/
+   ----------------------------- */
 const EXEMPLAR_LONG = [
-  // City: Riverside
+  // Riverside
   {TopCategory:"EnvironmentalDeterminants", SecondCategory:"BuiltEnvironment", ThirdCategory:"TobaccoAvailability", CityName:"Riverside", MSOACode:"RV01", MSOAName:"Riverside Central", Time:"None", Key:"value", Value:"0.38"},
   {TopCategory:"EnvironmentalDeterminants", SecondCategory:"BuiltEnvironment", ThirdCategory:"Walkability",        CityName:"Riverside", MSOACode:"RV01", MSOAName:"Riverside Central", Time:"None", Key:"value", Value:"72"},
-  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure", CityName:"Riverside", MSOACode:"RV01", MSOAName:"Riverside Central", Time:"2023-01", Key:"£/citizen", Value:"21.0"},
-  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure", CityName:"Riverside", MSOACode:"RV01", MSOAName:"Riverside Central", Time:"2023-02", Key:"£/citizen", Value:"23.4"},
-  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure", CityName:"Riverside", MSOACode:"RV01", MSOAName:"Riverside Central", Time:"2023-03", Key:"£/citizen", Value:"22.2"},
-  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure", CityName:"Riverside", MSOACode:"RV01", MSOAName:"Riverside Central", Time:"2023-01", Key:"£/citizen", Value:"31.1"},
-  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure", CityName:"Riverside", MSOACode:"RV01", MSOAName:"Riverside Central", Time:"2023-02", Key:"£/citizen", Value:"30.6"},
-  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure", CityName:"Riverside", MSOACode:"RV01", MSOAName:"Riverside Central", Time:"2023-03", Key:"£/citizen", Value:"30.9"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Riverside", MSOACode:"RV01", MSOAName:"Riverside Central", Time:"2023-01", Key:"£/citizen", Value:"21.0"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Riverside", MSOACode:"RV01", MSOAName:"Riverside Central", Time:"2023-02", Key:"£/citizen", Value:"23.4"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Riverside", MSOACode:"RV01", MSOAName:"Riverside Central", Time:"2023-03", Key:"£/citizen", Value:"22.2"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure",CityName:"Riverside", MSOACode:"RV01", MSOAName:"Riverside Central", Time:"2023-01", Key:"£/citizen", Value:"31.1"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure",CityName:"Riverside", MSOACode:"RV01", MSOAName:"Riverside Central", Time:"2023-02", Key:"£/citizen", Value:"30.6"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure",CityName:"Riverside", MSOACode:"RV01", MSOAName:"Riverside Central", Time:"2023-03", Key:"£/citizen", Value:"30.9"},
 
   {TopCategory:"EnvironmentalDeterminants", SecondCategory:"BuiltEnvironment", ThirdCategory:"TobaccoAvailability", CityName:"Riverside", MSOACode:"RV02", MSOAName:"Riverside North",   Time:"None", Key:"value", Value:"0.22"},
   {TopCategory:"EnvironmentalDeterminants", SecondCategory:"BuiltEnvironment", ThirdCategory:"Walkability",        CityName:"Riverside", MSOACode:"RV02", MSOAName:"Riverside North",   Time:"None", Key:"value", Value:"64"},
   {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Riverside", MSOACode:"RV02", MSOAName:"Riverside North",   Time:"2023-01", Key:"£/citizen", Value:"16.4"},
   {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Riverside", MSOACode:"RV02", MSOAName:"Riverside North",   Time:"2023-02", Key:"£/citizen", Value:"15.8"},
   {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Riverside", MSOACode:"RV02", MSOAName:"Riverside North",   Time:"2023-03", Key:"£/citizen", Value:"17.1"},
-  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure", CityName:"Riverside", MSOACode:"RV02", MSOAName:"Riverside North",  Time:"2023-01", Key:"£/citizen", Value:"34.8"},
-  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure", CityName:"Riverside", MSOACode:"RV02", MSOAName:"Riverside North",  Time:"2023-02", Key:"£/citizen", Value:"35.2"},
-  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure", CityName:"Riverside", MSOACode:"RV02", MSOAName:"Riverside North",  Time:"2023-03", Key:"£/citizen", Value:"34.5"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure",CityName:"Riverside", MSOACode:"RV02", MSOAName:"Riverside North",   Time:"2023-01", Key:"£/citizen", Value:"34.8"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure",CityName:"Riverside", MSOACode:"RV02", MSOAName:"Riverside North",   Time:"2023-02", Key:"£/citizen", Value:"35.2"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure",CityName:"Riverside", MSOACode:"RV02", MSOAName:"Riverside North",   Time:"2023-03", Key:"£/citizen", Value:"34.5"},
 
-  // City: Hillford
+  // Hillford
   {TopCategory:"EnvironmentalDeterminants", SecondCategory:"BuiltEnvironment", ThirdCategory:"TobaccoAvailability", CityName:"Hillford", MSOACode:"HF01", MSOAName:"Hillford East", Time:"None", Key:"value", Value:"0.44"},
   {TopCategory:"EnvironmentalDeterminants", SecondCategory:"BuiltEnvironment", ThirdCategory:"Walkability",        CityName:"Hillford", MSOACode:"HF01", MSOAName:"Hillford East", Time:"None", Key:"value", Value:"51"},
   {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Hillford", MSOACode:"HF01", MSOAName:"Hillford East", Time:"2023-01", Key:"£/citizen", Value:"27.5"},
   {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Hillford", MSOACode:"HF01", MSOAName:"Hillford East", Time:"2023-02", Key:"£/citizen", Value:"26.9"},
   {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Hillford", MSOACode:"HF01", MSOAName:"Hillford East", Time:"2023-03", Key:"£/citizen", Value:"28.1"},
-  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure", CityName:"Hillford", MSOACode:"HF01", MSOAName:"Hillford East", Time:"2023-01", Key:"£/citizen", Value:"39.0"},
-  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure", CityName:"Hillford", MSOACode:"HF01", MSOAName:"Hillford East", Time:"2023-02", Key:"£/citizen", Value:"38.6"},
-  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure", CityName:"Hillford", MSOACode:"HF01", MSOAName:"Hillford East", Time:"2023-03", Key:"£/citizen", Value:"39.4"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure",CityName:"Hillford", MSOACode:"HF01", MSOAName:"Hillford East", Time:"2023-01", Key:"£/citizen", Value:"39.0"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure",CityName:"Hillford", MSOACode:"HF01", MSOAName:"Hillford East", Time:"2023-02", Key:"£/citizen", Value:"38.6"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure",CityName:"Hillford", MSOACode:"HF01", MSOAName:"Hillford East", Time:"2023-03", Key:"£/citizen", Value:"39.4"},
 
   {TopCategory:"EnvironmentalDeterminants", SecondCategory:"BuiltEnvironment", ThirdCategory:"TobaccoAvailability", CityName:"Hillford", MSOACode:"HF02", MSOAName:"Hillford West", Time:"None", Key:"value", Value:"0.18"},
   {TopCategory:"EnvironmentalDeterminants", SecondCategory:"BuiltEnvironment", ThirdCategory:"Walkability",        CityName:"Hillford", MSOACode:"HF02", MSOAName:"Hillford West", Time:"None", Key:"value", Value:"78"},
   {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Hillford", MSOACode:"HF02", MSOAName:"Hillford West", Time:"2023-01", Key:"£/citizen", Value:"14.2"},
   {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Hillford", MSOACode:"HF02", MSOAName:"Hillford West", Time:"2023-02", Key:"£/citizen", Value:"13.7"},
   {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"AsthmaExpenditure",  CityName:"Hillford", MSOACode:"HF02", MSOAName:"Hillford West", Time:"2023-03", Key:"£/citizen", Value:"14.9"},
-  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure", CityName:"Hillford", MSOACode:"HF02", MSOAName:"Hillford West", Time:"2023-01", Key:"£/citizen", Value:"28.7"},
-  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure", CityName:"Hillford", MSOACode:"HF02", MSOAName:"Hillford West", Time:"2023-02", Key:"£/citizen", Value:"28.1"},
-  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure", CityName:"Hillford", MSOACode:"HF02", MSOAName:"Hillford West", Time:"2023-03", Key:"£/citizen", Value:"28.9"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure",CityName:"Hillford", MSOACode:"HF02", MSOAName:"Hillford West", Time:"2023-01", Key:"£/citizen", Value:"28.7"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure",CityName:"Hillford", MSOACode:"HF02", MSOAName:"Hillford West", Time:"2023-02", Key:"£/citizen", Value:"28.1"},
+  {TopCategory:"HealthOutcome",             SecondCategory:"PhysicalHealth",   ThirdCategory:"DementiaExpenditure",CityName:"Hillford", MSOACode:"HF02", MSOAName:"Hillford West", Time:"2023-03", Key:"£/citizen", Value:"28.9"},
 ];
 
 const state = {
@@ -258,7 +247,7 @@ const steps = [
       setStep(
         "Start with a question (the most important step)",
         `
-        Data analysis is <b>not</b> “make charts until something looks interesting”.
+        Data analysis is not “make charts until something looks interesting”.
         You begin with a question you care about.
         <br/><br/>
         <b>Examples:</b>
@@ -268,14 +257,10 @@ const steps = [
           <li>Which MSOAs are outliers and deserve a closer look?</li>
         </ul>
         <br/>
-        <b>Why this matters:</b> A clear question tells you:
-        what columns you need, what should be grouped, and what “success” looks like.
+        <b>Try now:</b> In the spreadsheet, find <code class="inline">ThirdCategory</code>, <code class="inline">Time</code>, and <code class="inline">Value</code>.
+        Ask: “What does one row represent?”
         `,
-        tipBox(`
-          Try this now: use the spreadsheet and find the columns
-          <code class="inline">ThirdCategory</code>, <code class="inline">Time</code>, <code class="inline">Value</code>.
-          Ask: “What does one row represent?”
-        `)
+        tipBox(`Use the Quick filter and search for “AsthmaExpenditure”.`)
       );
       showLong();
     }
@@ -287,23 +272,18 @@ const steps = [
       setStep(
         "Understand the ‘long table’ (raw format)",
         `
-        In this dataset, each row is <b>one measurement</b>.
-        It answers: “<i>What was measured? Where? When? What value?</i>”
+        Each row is <b>one measurement</b>.
+        It answers: “What was measured? Where? When? What value?”
         <br/><br/>
         <b>Read a row like a sentence:</b>
         <ul>
           <li><b>CityName</b> + <b>MSOACode</b> = where</li>
-          <li><b>ThirdCategory</b> = what indicator (e.g., TobaccoAvailability)</li>
-          <li><b>Time</b> = when (or <code class="inline">None</code> if it’s not a time series)</li>
-          <li><b>Value</b> = the number you analyze</li>
+          <li><b>ThirdCategory</b> = what indicator</li>
+          <li><b>Time</b> = when (or <code class="inline">None</code>)</li>
+          <li><b>Value</b> = the number</li>
         </ul>
-        <br/>
-        <b>Question to ask:</b> “Which indicators change over time, and which don’t?”
         `,
-        okBox(`
-          Look for rows where <code class="inline">Time</code> is “None”.
-          Those are indicators that don’t vary over time in this example (like Walkability).
-        `)
+        okBox(`Find rows where Time is “None”. Those are not time series in this exemplar.`)
       );
       showLong();
     }
@@ -317,19 +297,14 @@ const steps = [
         `
         Before analysis, do quick checks:
         <ol>
-          <li><b>Missing values:</b> Are any Values blank or non-numeric?</li>
-          <li><b>Duplicates:</b> Do you have the same MSOA, indicator, and time twice?</li>
+          <li><b>Missing values:</b> Are Values blank or non-numeric?</li>
+          <li><b>Duplicates:</b> Same MSOA + indicator + time appearing twice?</li>
           <li><b>Units:</b> What does <code class="inline">Key</code> mean (e.g., £/citizen)?</li>
         </ol>
         <br/>
-        <b>Why this matters:</b> Correlations and averages can become nonsense if:
-        you mix units, include duplicates, or treat strings as numbers.
+        <b>Why:</b> If you mix units or double-count rows, your results can be wrong.
         `,
-        tipBox(`
-          Try filtering <code class="inline">ThirdCategory</code> to “AsthmaExpenditure”.
-          Then sort by <code class="inline">Time</code>.
-          Ask: “Do I have one value per MSOA per month?”
-        `)
+        tipBox(`Filter ThirdCategory to “AsthmaExpenditure”, then sort by MSOACode and Time.`)
       );
       showLong();
     }
@@ -341,105 +316,72 @@ const steps = [
       setStep(
         "Choose your analysis scope",
         `
-        Real datasets are huge, so you usually choose a scope:
+        Decide your scope:
         <ul>
-          <li><b>Which city?</b> (or all cities)</li>
-          <li><b>Which time period?</b> (here we have 2023-01 to 2023-03 for expenditures)</li>
-          <li><b>Which indicators?</b> (for your question)</li>
+          <li>Which <b>city</b> (or all cities)?</li>
+          <li>Which <b>time period</b>?</li>
+          <li>Which <b>indicators</b>?</li>
         </ul>
         <br/>
-        <b>Why this matters:</b> If you change scope, your results can change.
-        Always write down your scope so you can reproduce your work later.
+        <b>Why:</b> Changing scope can change conclusions.
         `,
-        tipBox(`
-          Use the <b>City</b> dropdown. Watch how the spreadsheet changes.
-          Ask: “Am I comparing areas within one city, or mixing cities?”
-        `)
+        tipBox(`Use the City dropdown and see how the table changes.`)
       );
       showLong();
     }
   },
   {
     title: "5) Pivot to a wide table",
-    desc: "Turn ‘many rows per MSOA’ into ‘one row per MSOA’ for analysis.",
+    desc: "Turn many rows per MSOA into one row per MSOA for analysis.",
     render() {
       setStep(
         "Make an analysis-ready ‘wide table’ (pivot)",
         `
-        To compare two variables (like tobacco vs asthma), you need them side-by-side.
-        That’s easier in a <b>wide table</b> where each MSOA has one row.
+        To compare variables side-by-side (x vs y), build a <b>wide table</b>.
         <br/><br/>
-        This app will build a wide table with:
+        This app creates one row per MSOA with:
         <ul>
-          <li><b>TobaccoAvailability</b> (single value)</li>
-          <li><b>Walkability</b> (single value)</li>
-          <li><b>AsthmaExpenditure_mean</b> (average across months)</li>
-          <li><b>DementiaExpenditure_mean</b> (average across months)</li>
+          <li>TobaccoAvailability</li>
+          <li>Walkability</li>
+          <li>AsthmaExpenditure_mean (average across months)</li>
+          <li>DementiaExpenditure_mean (average across months)</li>
         </ul>
         <br/>
-        <b>Question to ask:</b> “How should time-series values be reduced?”
-        (mean, median, last month, a particular year, etc.)
+        <b>Key question:</b> “How should time-series values be reduced?”
         `,
-        okBox(`Click <b>Build wide table</b> to pivot. Then switch the view to “Wide table (pivoted)”.`)
+        okBox(`Click <b>Build wide table</b>, then switch View to “Wide table (pivoted)”.`)
       );
-      showLong(); // stay long until user pivots
+      showLong();
     }
   },
   {
     title: "6) Run a simple experiment",
-    desc: "Turn your question into a scatter plot and correlation.",
+    desc: "Make a scatter plot and correlation for a question.",
     render() {
       setStep(
         "Experiment: tobacco availability vs asthma expenditure",
         `
-        Now we practice a basic workflow:
+        Workflow:
         <ol>
-          <li><b>Define x</b>: TobaccoAvailability</li>
-          <li><b>Define y</b>: AsthmaExpenditure_mean</li>
-          <li><b>Make a scatter plot</b> (each dot is an MSOA)</li>
-          <li><b>Compute Pearson correlation</b> (a quick measure of association)</li>
+          <li>Define x: TobaccoAvailability</li>
+          <li>Define y: AsthmaExpenditure_mean</li>
+          <li>Make a scatter plot (each dot is an MSOA)</li>
+          <li>Compute Pearson correlation (association, not causation)</li>
         </ol>
         <br/>
-        <b>Important questions to ask:</b>
+        <b>Questions to ask:</b>
         <ul>
-          <li>Does correlation imply causation? (No.)</li>
-          <li>Are there outliers driving the result?</li>
-          <li>Do we need controls (income, age, pollution) before interpreting?</li>
+          <li>Are outliers driving the pattern?</li>
+          <li>What confounders might affect both?</li>
         </ul>
         `,
-        tipBox(`Build the wide table first, then click <b>Run correlation</b>. Try it for one city vs all cities.`)
+        tipBox(`Build the wide table first. Then click <b>Run correlation</b>.`)
       );
       showWideIfReady();
     }
   },
-  {
-    title: "7) Interpret + write down conclusions",
-    desc: "Explain what you found and what you’d do next.",
-    render() {
-      setStep(
-        "Interpretation (what a good analysis looks like)",
-        `
-        A good conclusion includes:
-        <ul>
-          <li><b>What you did:</b> “We aggregated asthma expenditure over 3 months per MSOA…”</li>
-          <li><b>What you found:</b> “We observed a positive/negative association…”</li>
-          <li><b>Limitations:</b> sample size, missing variables, confounding factors</li>
-          <li><b>Next steps:</b> stratify by city, add controls, test robustness</li>
-        </ul>
-        <br/>
-        <b>Why this matters:</b> Analysis is only useful if someone else can understand,
-        reproduce, and challenge it.
-        `,
-        okBox(`Try: change the city scope and re-run correlation. If the sign or strength changes, write down why.`)
-      );
-      showWideIfReady();
-    }
-  }
 ];
 
-/* -----------------------------
-   Helpers
-   ----------------------------- */
 function setStep(title, bodyHtml, boxHtml) {
   el("stepTitle").textContent = title;
   el("stepBody").innerHTML = bodyHtml;
@@ -453,13 +395,11 @@ function toNum(x) {
   const n = Number(String(x ?? "").trim());
   return Number.isFinite(n) ? n : NaN;
 }
-
 function mean(arr) {
   let s=0,c=0;
   for (const v of arr) if (Number.isFinite(v)) { s+=v; c++; }
   return c ? s/c : NaN;
 }
-
 function pearson(xs, ys) {
   const pts = [];
   for (let i=0;i<xs.length;i++){
@@ -482,27 +422,6 @@ function pearson(xs, ys) {
   }
   const den = Math.sqrt(dx*dy);
   return { r: den ? num/den : NaN, n };
-}
-
-/* -----------------------------
-   Grid + filtering
-   ----------------------------- */
-function initGrid() {
-  if (state.grid) return;
-
-  state.grid = new Tabulator("#grid", {
-    height: "430px",
-    layout: "fitDataStretch",
-    placeholder: "No data.",
-    movableColumns: true,
-    pagination: true,
-    paginationSize: 20,
-    paginationSizeSelector: [20, 50, 100],
-    columns: longColumns(),
-    dataFiltered: updateKPIs,
-    dataLoaded: updateKPIs,
-    dataSorted: updateKPIs,
-  });
 }
 
 function longColumns() {
@@ -533,6 +452,29 @@ function wideColumns() {
   ];
 }
 
+function initGrid() {
+  if (state.grid) return;
+
+  const gridEl = document.getElementById("grid");
+  if (!gridEl) {
+    throw new Error('Cannot find <div id="grid">. Check the element exists and the id matches.');
+  }
+
+  state.grid = new Tabulator(gridEl, {
+    height: "430px",
+    layout: "fitDataStretch",
+    placeholder: "No data.",
+    movableColumns: true,
+    pagination: true,
+    paginationSize: 20,
+    paginationSizeSelector: [20, 50, 100],
+    columns: longColumns(),
+    dataFiltered: updateKPIs,
+    dataLoaded: updateKPIs,
+    dataSorted: updateKPIs,
+  });
+}
+
 function applyCityFilter(rows) {
   const city = el("citySelect").value;
   state.city = city;
@@ -547,9 +489,7 @@ function applyQuickFilterToGrid() {
     updateKPIs();
     return;
   }
-  state.grid.setFilter((data) => {
-    return Object.values(data).some(v => String(v ?? "").toLowerCase().includes(q));
-  });
+  state.grid.setFilter((data) => Object.values(data).some(v => String(v ?? "").toLowerCase().includes(q)));
   updateKPIs();
 }
 
@@ -560,9 +500,6 @@ function resetAllFilters() {
   updateKPIs();
 }
 
-/* -----------------------------
-   Views
-   ----------------------------- */
 function showLong() {
   state.view = "long";
   el("viewSelect").value = "long";
@@ -570,13 +507,13 @@ function showLong() {
   state.grid.setColumns(longColumns());
   const rows = applyCityFilter(state.longRows);
   state.grid.setData(rows);
+  state.grid.redraw(true); // important if layout changed
   el("btnRunExp").disabled = true;
   clearChart("In long-table view. Build the wide table to run the experiment.");
 }
 
 function showWideIfReady() {
   if (!state.wideRows) {
-    // stay in long view and guide user
     clearChart("Build the wide table first (click “Build wide table”).");
     return;
   }
@@ -590,15 +527,13 @@ function showWide() {
   state.grid.setColumns(wideColumns());
   const rows = applyCityFilter(state.wideRows);
   state.grid.setData(rows);
+  state.grid.redraw(true); // important if layout changed
   el("btnRunExp").disabled = false;
   clearChart("Wide table ready. Click “Run correlation” to create a chart.");
 }
 
-/* -----------------------------
-   Pivot (long -> wide)
-   ----------------------------- */
 function buildWideTable() {
-  const base = applyCityFilter(state.longRows); // respect current city when building
+  const base = applyCityFilter(state.longRows);
   const byMSOA = new Map();
 
   function ensure(r) {
@@ -651,21 +586,13 @@ function buildWideTable() {
     delete row._dementia;
     out.push(row);
   }
-
   out.sort((a,b)=>a.CityName.localeCompare(b.CityName) || a.MSOAName.localeCompare(b.MSOAName));
   state.wideRows = out;
-
-  // after building wide table for a specific city, ensure city dropdown still works:
-  // we keep wideRows city-specific if user filtered city during pivot; that is OK for teaching.
 }
 
-/* -----------------------------
-   Experiment
-   ----------------------------- */
 function runCorrelation() {
   if (!state.wideRows) return;
 
-  // use current view/filter city (grid data)
   const rows = state.grid.getData("active") || [];
   const xs = [], ys = [], labels = [];
   for (const r of rows) {
@@ -695,16 +622,12 @@ function runCorrelation() {
 
   Plotly.react("chart", [trace], layout, { responsive:true, displaylogo:false });
   el("chartCaption").textContent =
-    `We plotted one dot per MSOA. Pearson r summarizes association (not causation). r=${Number.isFinite(r) ? r.toFixed(3) : "NA"}, n=${n}.`;
+    `One dot per MSOA. Pearson r summarizes association (not causation). r=${Number.isFinite(r) ? r.toFixed(3) : "NA"}, n=${n}.`;
 
-  // Teaching note in KPI area
   el("kpiNote").textContent =
-    "Interpretation tip: check whether a single extreme dot drives the trend; then ask what other variables might explain both tobacco and asthma.";
+    "Interpretation tip: check outliers, and ask what other factors might explain both tobacco and asthma.";
 }
 
-/* -----------------------------
-   KPIs + chart helpers
-   ----------------------------- */
 function updateKPIs() {
   const rows = state.grid?.getData("active") || [];
   el("kpiRows").textContent = rows.length.toLocaleString();
@@ -718,7 +641,7 @@ function updateKPIs() {
     el("kpiNote").textContent = `Long-table quick check: rows with Time=None: ${noneTime.toLocaleString()}.`;
   } else {
     const missing = rows.filter(r => !Number.isFinite(toNum(r.AsthmaExpenditure_mean)) || !Number.isFinite(toNum(r.TobaccoAvailability))).length;
-    el("kpiNote").textContent = `Wide-table quick check: rows missing x or y for the experiment: ${missing.toLocaleString()}.`;
+    el("kpiNote").textContent = `Wide-table quick check: rows missing x or y: ${missing.toLocaleString()}.`;
   }
 }
 
@@ -728,9 +651,6 @@ function clearChart(msg) {
   el("chartCaption").textContent = msg;
 }
 
-/* -----------------------------
-   Step UI
-   ----------------------------- */
 function renderSteps() {
   const wrap = el("steps");
   wrap.innerHTML = "";
@@ -751,9 +671,9 @@ function refreshStep() {
 }
 
 /* -----------------------------
-   Boot + wiring
+   Boot (DOM-safe)
    ----------------------------- */
-(function boot(){
+window.addEventListener("DOMContentLoaded", () => {
   initGrid();
 
   // Populate city select
@@ -773,9 +693,8 @@ function refreshStep() {
   // Wire controls
   el("quickFilter").addEventListener("input", applyQuickFilterToGrid);
   el("citySelect").addEventListener("change", () => {
-    // if user changes city, we show that scope immediately
     if (state.view === "long") showLong();
-    else if (state.view === "wide") showWideIfReady();
+    else showWideIfReady();
   });
 
   el("viewSelect").addEventListener("change", () => {
@@ -788,7 +707,6 @@ function refreshStep() {
 
   el("btnPivot").onclick = () => {
     buildWideTable();
-    // after pivot, switch to wide view automatically for teaching
     showWideIfReady();
   };
 
@@ -798,9 +716,8 @@ function refreshStep() {
   el("btnPrev").onclick = () => { state.stepIndex = Math.max(0, state.stepIndex - 1); refreshStep(); };
   el("btnNext").onclick = () => { state.stepIndex = Math.min(steps.length - 1, state.stepIndex + 1); refreshStep(); };
 
-  // First step
   refreshStep();
-})();
+});
 </script>
 </body>
 </html>
