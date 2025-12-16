@@ -1,0 +1,1470 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multi-Dataset Hackathon Journey Navigator</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #818cf8;
+      --secondary: #10b981;
+      --secondary-light: #34d399;
+      --accent: #f59e0b;
+      --accent-light: #fbbf24;
+      --dark: #1e293b;
+      --darker: #0f172a;
+      --light: #f8fafc;
+      --gray: #94a3b8;
+      --gray-dark: #475569;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --info: #3b82f6;
+      --border: #cbd5e1;
+      --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --radius: 12px;
+      --transition: all 0.3s ease;
+      --epi-color: #8b5cf6;
+      --epi-light: #c4b5fd;
+      --finance-color: #0ea5e9;
+      --finance-light: #7dd3fc;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #f0f4ff 0%, #fef7ff 100%);
+      color: var(--dark);
+      line-height: 1.6;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .logo-icon {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: var(--gray-dark);
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .app-container {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 25px;
+      margin-bottom: 40px;
+    }
+
+    @media (max-width: 1024px) {
+      .app-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Progress Sidebar */
+    .progress-sidebar {
+      background: white;
+      border-radius: var(--radius);
+      padding: 25px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #f1f5f9;
+    }
+
+    .progress-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--darker);
+    }
+
+    .time-badge {
+      background: linear-gradient(to right, var(--secondary), var(--secondary-light));
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .progress-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .step-indicator {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 18px;
+      border-radius: var(--radius);
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+    }
+
+    .step-indicator:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.05);
+      border-color: var(--primary-light);
+    }
+
+    .step-indicator.active {
+      background: linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(129, 140, 248, 0.05));
+      border: 2px solid var(--primary);
+      box-shadow: 0 5px 15px rgba(79, 70, 229, 0.1);
+    }
+
+    .step-indicator.completed {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(52, 211, 153, 0.05));
+      border-color: var(--secondary);
+    }
+
+    .step-number {
+      background: #e2e8f0;
+      color: var(--gray-dark);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1rem;
+      transition: var(--transition);
+    }
+
+    .step-indicator.active .step-number {
+      background: var(--primary);
+      color: white;
+    }
+
+    .step-indicator.completed .step-number {
+      background: var(--secondary);
+      color: white;
+    }
+
+    .step-info {
+      flex: 1;
+    }
+
+    .step-name {
+      font-weight: 700;
+      color: var(--darker);
+      margin-bottom: 4px;
+    }
+
+    .step-duration {
+      font-size: 0.85rem;
+      color: var(--gray);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .step-icon {
+      color: var(--gray);
+      transition: var(--transition);
+    }
+
+    .step-indicator.active .step-icon {
+      color: var(--primary);
+    }
+
+    .step-indicator.completed .step-icon {
+      color: var(--secondary);
+    }
+
+    .completion-check {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: var(--secondary);
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+    }
+
+    /* Main Content */
+    .main-content {
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .content-header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white;
+      padding: 25px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .content-header::before {
+      content: "";
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 150px;
+      height: 150px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+    }
+
+    .step-title {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step-description {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+    }
+
+    .content-body {
+      padding: 30px;
+    }
+
+    /* Dual Dataset Banner */
+    .dual-dataset-banner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 25px;
+    }
+
+    @media (max-width: 768px) {
+      .dual-dataset-banner {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .dataset-banner {
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      height: 100%;
+    }
+
+    .epi-dataset {
+      background: linear-gradient(to right, rgba(139, 92, 246, 0.1), rgba(196, 181, 253, 0.05));
+      border: 1px solid rgba(139, 92, 246, 0.2);
+    }
+
+    .finance-dataset {
+      background: linear-gradient(to right, rgba(14, 165, 233, 0.1), rgba(125, 211, 252, 0.05));
+      border: 1px solid rgba(14, 165, 233, 0.2);
+    }
+
+    .dataset-icon {
+      color: white;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .epi-icon {
+      background: var(--epi-color);
+    }
+
+    .finance-icon {
+      background: var(--finance-color);
+    }
+
+    .dataset-info h3 {
+      color: var(--darker);
+      margin-bottom: 5px;
+    }
+
+    .dataset-description {
+      font-size: 0.95rem;
+      color: var(--gray-dark);
+      margin-bottom: 10px;
+    }
+
+    .dataset-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .dataset-tag {
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .epi-tag {
+      background: rgba(139, 92, 246, 0.1);
+      color: var(--epi-color);
+    }
+
+    .finance-tag {
+      background: rgba(14, 165, 233, 0.1);
+      color: var(--finance-color);
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 25px;
+      margin-bottom: 30px;
+    }
+
+    .content-card {
+      background: #f8fafc;
+      border-radius: var(--radius);
+      padding: 25px;
+      border: 1px solid var(--border);
+      transition: var(--transition);
+    }
+
+    .content-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .card-icon {
+      background: var(--primary);
+      color: white;
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .card-title {
+      font-size: 1.3rem;
+      color: var(--darker);
+    }
+
+    .card-body ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .card-body li {
+      padding: 8px 0;
+      padding-left: 28px;
+      position: relative;
+    }
+
+    .card-body li:before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: var(--primary);
+      font-size: 1.5rem;
+      line-height: 1;
+    }
+
+    .stakeholder-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .stakeholder-card {
+      background: white;
+      border-radius: 10px;
+      padding: 15px;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: var(--transition);
+    }
+
+    .stakeholder-card:hover {
+      border-color: var(--primary-light);
+      transform: translateY(-2px);
+    }
+
+    .stakeholder-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .stakeholder-name {
+      font-weight: 600;
+      color: var(--darker);
+      font-size: 0.95rem;
+    }
+
+    /* Comparison Section */
+    .comparison-section {
+      margin-top: 30px;
+    }
+
+    .comparison-title {
+      font-size: 1.5rem;
+      color: var(--darker);
+      margin-bottom: 20px;
+      text-align: center;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .comparison-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .comparison-card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 20px;
+      border: 1px solid var(--border);
+    }
+
+    .comparison-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .comparison-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: white;
+    }
+
+    .comparison-name {
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+
+    .comparison-points li {
+      padding: 6px 0;
+      padding-left: 20px;
+      position: relative;
+    }
+
+    .comparison-points li:before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: bold;
+    }
+
+    /* Visualization */
+    .visualization-container {
+      background: white;
+      border-radius: var(--radius);
+      padding: 25px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      margin-bottom: 40px;
+      overflow-x: auto;
+    }
+
+    .visualization-title {
+      font-size: 1.5rem;
+      color: var(--darker);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .journey-visualization {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      min-width: 800px;
+    }
+
+    .journey-visualization::before {
+      content: "";
+      position: absolute;
+      top: 40px;
+      left: 50px;
+      right: 50px;
+      height: 4px;
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      z-index: 1;
+    }
+
+    .journey-step {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100px;
+    }
+
+    .journey-node {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: white;
+      border: 4px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: var(--gray);
+      margin-bottom: 15px;
+      transition: var(--transition);
+    }
+
+    .journey-step.active .journey-node {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: white;
+      transform: scale(1.1);
+    }
+
+    .journey-step.completed .journey-node {
+      border-color: var(--secondary);
+      background: var(--secondary);
+      color: white;
+    }
+
+    .journey-label {
+      text-align: center;
+      font-weight: 600;
+      color: var(--gray-dark);
+      font-size: 0.9rem;
+      padding: 0 5px;
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      background: #f8fafc;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      margin-top: 20px;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 15px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(to right, var(--primary), var(--primary-light));
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
+    }
+
+    .btn-secondary {
+      background: white;
+      color: var(--primary);
+      border: 2px solid var(--primary);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(79, 70, 229, 0.05);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    .step-counter {
+      font-weight: 700;
+      color: var(--darker);
+    }
+
+    /* Dataset Toggle */
+    .dataset-toggle {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .toggle-btn {
+      padding: 10px 20px;
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toggle-btn.active {
+      border-color: var(--primary);
+      background: rgba(79, 70, 229, 0.1);
+      color: var(--primary);
+    }
+
+    .toggle-btn:hover:not(.active) {
+      border-color: var(--primary-light);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .app-container {
+        gap: 15px;
+      }
+      
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .stakeholder-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .controls {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      h1 {
+        font-size: 2rem;
+      }
+      
+      .dataset-toggle {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <div class="logo-icon">
+          <i class="fas fa-project-diagram"></i>
+        </div>
+        <div>
+          <h1>Multi-Dataset Hackathon Navigator</h1>
+          <p class="subtitle">Compare approaches across epidemiology and accounts datasets to identify cross-domain patterns.</p>
+        </div>
+      </div>
+    </header>
+
+    <!-- Visualization -->
+    <div class="visualization-container">
+      <h2 class="visualization-title">Hackathon Journey Map</h2>
+      <div class="journey-visualization" id="journeyVisualization">
+        <!-- Journey steps will be generated by JavaScript -->
+      </div>
+    </div>
+
+    <div class="app-container">
+      <!-- Progress Sidebar -->
+      <div class="progress-sidebar">
+        <div class="progress-header">
+          <h2 class="progress-title">Hackathon Steps</h2>
+          <div class="time-badge">(to be split over 2 days)</div>
+        </div>
+        
+        <div class="progress-steps" id="progressSteps">
+          <!-- Progress steps will be generated by JavaScript -->
+        </div>
+        
+        <div class="controls" style="margin-top: 25px; padding: 15px;">
+          <div class="nav-buttons">
+            <button class="btn btn-secondary" id="prevBtn">
+              <i class="fas fa-arrow-left"></i> Previous
+            </button>
+            <button class="btn btn-primary" id="nextBtn">
+              Next <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+          <div class="step-counter" id="stepCounter">Step 1 of 7</div>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <div class="content-header" id="contentHeader">
+          <!-- Step title and description will be filled by JavaScript -->
+        </div>
+        
+        <div class="content-body">
+          <!-- Dual Dataset Banner -->
+          <div class="dual-dataset-banner">
+            <div class="dataset-banner epi-dataset">
+              <div class="dataset-icon epi-icon">
+                <i class="fas fa-virus"></i>
+              </div>
+              <div class="dataset-info">
+                <h3>Epidemiology Dataset</h3>
+                <p class="dataset-description">Cohort studies, exposure tracking, and health outcome data with linkage to lab/omics information.</p>
+                <div class="dataset-tags">
+                  <span class="dataset-tag epi-tag">cohorts & exposures</span>
+                  <span class="dataset-tag epi-tag">protocol versions</span>
+                  <span class="dataset-tag epi-tag">site-level differences</span>
+                  <span class="dataset-tag epi-tag">lab/omics linkage</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="dataset-banner finance-dataset">
+              <div class="dataset-icon finance-icon">
+                <i class="fas fa-chart-line"></i>
+              </div>
+              <div class="dataset-info">
+                <h3>Accounts Dataset</h3>
+                <p class="dataset-description">Financial tracking, cost allocation, purchase orders, and governed financial reporting.</p>
+                <div class="dataset-tags">
+                  <span class="dataset-tag finance-tag">cost centres</span>
+                  <span class="dataset-tag finance-tag">purchase orders</span>
+                  <span class="dataset-tag finance-tag">project financials</span>
+                  <span class="dataset-tag finance-tag">governed reporting</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Content Grid -->
+          <div class="content-grid" id="contentGrid">
+            <!-- Content cards will be generated by JavaScript -->
+          </div>
+          
+          <!-- Comparison Section -->
+          <div class="comparison-section">
+            <h3 class="comparison-title">Dataset Comparison for This Step</h3>
+            <div class="comparison-grid" id="comparisonGrid">
+              <!-- Comparison cards will be generated by JavaScript -->
+            </div>
+          </div>
+          
+          <!-- Stakeholder Insights -->
+          <div class="content-card">
+            <div class="card-header">
+              <div class="card-icon" style="background: var(--info);">
+                <i class="fas fa-users"></i>
+              </div>
+              <h3 class="card-title">Stakeholder Insights</h3>
+            </div>
+            <div class="card-body">
+              <p>What different team members gain from this step across both datasets:</p>
+              <div class="stakeholder-grid" id="stakeholderGrid">
+                <!-- Stakeholder cards will be generated by JavaScript -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Data for hackathon steps
+    const hackathonData = {
+      datasets: {
+        epi: {
+          name: "Epidemiology Dataset",
+          icon: "fas fa-virus",
+          color: "#8b5cf6",
+          tags: ["cohorts & exposures", "protocol versions", "site-level differences", "lab/omics linkage"],
+          description: "Cohort studies, exposure tracking, and health outcome data with linkage to lab/omics information."
+        },
+        finance: {
+          name: "Accounts Dataset",
+          icon: "fas fa-chart-line",
+          color: "#0ea5e9",
+          tags: ["cost centres", "purchase orders", "project financials", "governed reporting"],
+          description: "Financial tracking, cost allocation, purchase orders, and governed financial reporting."
+        }
+      },
+      
+      steps: [
+        {
+          id: 1,
+          title: "Welcome & Rules",
+          description: "Set the rule: we collect approaches (patterns) for joining dots across datasets — not choosing tools or implementing solutions.",
+          duration: "20min",
+          icon: "fas fa-door-open",
+          color: "#4f46e5",
+          objectives: [
+            "Teams are mixed across silos (HR, Accounts, Bio, DS, IT, QA)",
+            "Nominate an Approach Steward to redirect 'solutions' into 'approaches'",
+            "Use a 'parking lot' for solution ideas (capture, don't pursue)"
+          ],
+          outputs: [
+            "Shared definitions: Approach vs Solution",
+            "Agree the artefacts: Dataset Brief, Dot-Join Map, Approach Cards",
+            "A short team working agreement"
+          ],
+          challenges: [
+            "People will still jump to tools — steward must redirect",
+            "If constraints aren't voiced, approaches become unrealistic"
+          ],
+          tips: [
+            "Use: 'What's the approach regardless of tool?'",
+            "Capture solutions in parking lot; keep main flow on patterns"
+          ],
+          epiFocus: [
+            "Define 'exposure' consistently across studies",
+            "Agree on cohort inclusion criteria as a pattern",
+            "Identify protocol deviations as a knowledge gap"
+          ],
+          financeFocus: [
+            "Define 'cost centre' consistently across departments",
+            "Agree on purchase approval workflows as patterns",
+            "Identify budget vs actual reconciliation as a knowledge gap"
+          ],
+          stakeholders: [
+            { role: "Data Scientist", gain: "Freedom to propose patterns without building", icon: "fas fa-brain", color: "#8b5cf6" },
+            { role: "Data Owner", gain: "Ownership/access constraints are set early", icon: "fas fa-key", color: "#10b981" },
+            { role: "HR", gain: "People/skills/incentives stay in scope", icon: "fas fa-users", color: "#3b82f6" },
+            { role: "IT", gain: "Maintainable patterns are encouraged", icon: "fas fa-server", color: "#f59e0b" }
+          ]
+        },
+        {
+          id: 2,
+          title: "Dataset Brief",
+          description: "Align on meaning: what the dataset is, who uses it, what decisions it supports, and where definitions differ.",
+          duration: "50min",
+          icon: "fas fa-file-alt",
+          color: "#10b981",
+          objectives: [
+            "Identify producers, owners/stewards, consumers, approvers",
+            "List top decisions this dataset influences",
+            "Note 'definition hotspots' where terms vary by team"
+          ],
+          outputs: [
+            "One-page Dataset Brief",
+            "Top 5 questions people ask of this dataset",
+            "Definition hotspots list (captured, not resolved)"
+          ],
+          challenges: [
+            "Definition debates can spiral — capture differences and move on",
+            "Handle sensitive content by focusing on roles/flows, not records"
+          ],
+          tips: [
+            "Ask: 'Who makes a wrong decision if this is misunderstood?'",
+            "Write definitions in plain language, not schema language"
+          ],
+          epiFocus: [
+            "Define 'case' vs 'control' consistently",
+            "Clarify 'exposure window' calculation methods",
+            "Map lab result interpretation variations"
+          ],
+          financeFocus: [
+            "Define 'capital' vs 'operational' expenditure",
+            "Clarify 'fiscal year' vs 'calendar year' reporting",
+            "Map budget category interpretation variations"
+          ],
+          stakeholders: [
+            { role: "Data Scientist", gain: "Learn real questions behind 'data quality'", icon: "fas fa-brain", color: "#8b5cf6" },
+            { role: "Data Owner", gain: "Stewardship boundaries become explicit", icon: "fas fa-key", color: "#10b981" },
+            { role: "HR", gain: "HR data becomes a real dataset with decision impact", icon: "fas fa-users", color: "#3b82f6" },
+            { role: "QA", gain: "Regulated touchpoints are identified early", icon: "fas fa-check-double", color: "#ef4444" }
+          ]
+        },
+        {
+          id: 3,
+          title: "Dot-Join Map",
+          description: "Map the dataset's key interfaces (teams, systems, other datasets). 'Silos' show up as broken joins where knowledge fails to travel.",
+          duration: "60min",
+          icon: "fas fa-project-diagram",
+          color: "#8b5cf6",
+          objectives: [
+            "Put dataset in the centre with spokes to teams/datasets/systems",
+            "For each join, list what must travel (definition, provenance, context)",
+            "Mark failure points: duplication, mistrust, slow handoffs"
+          ],
+          outputs: [
+            "Dot-Join Map visualization",
+            "Top 5 breakpoints identified",
+            "2-3 high-leverage joins to target"
+          ],
+          challenges: [
+            "Over-mapping: focus on the most painful joins",
+            "Avoid naming individuals; stick to roles and systems"
+          ],
+          tips: [
+            "Ask: 'Where do we recreate work because this join is weak?'",
+            "Ask: 'Who is the human glue holding this join together?'"
+          ],
+          epiFocus: [
+            "Join: Cohort definitions ↔ Lab results",
+            "Join: Exposure data ↔ Health outcomes",
+            "Join: Protocol versions ↔ Site implementations"
+          ],
+          financeFocus: [
+            "Join: Purchase orders ↔ Budget allocations",
+            "Join: Cost centres ↔ Department reporting",
+            "Join: Project codes ↔ Financial systems"
+          ],
+          stakeholders: [
+            { role: "Data Scientist", gain: "Clear places where metadata/lineage are missing", icon: "fas fa-brain", color: "#8b5cf6" },
+            { role: "Operations", gain: "Prioritised list of joins to drive approach generation", icon: "fas fa-tasks", color: "#6366f1" },
+            { role: "IT", gain: "Integration/access pain concentrates at joins", icon: "fas fa-server", color: "#f59e0b" },
+            { role: "Finance", gain: "Approvals/reconciliation pain is tied to specific joins", icon: "fas fa-chart-line", color: "#84cc16" }
+          ]
+        },
+        {
+          id: 4,
+          title: "Generate Approach Cards",
+          description: "Create a menu of approaches for the top joins. Approaches may be people/process/technical/hybrid — but stay tool-agnostic.",
+          duration: "75min",
+          icon: "fas fa-lightbulb",
+          color: "#f59e0b",
+          objectives: [
+            "Pick 2-3 joins from the map",
+            "For each join, write cards: 'One possible approach is to... because...'",
+            "Ensure diversity: at least 2 people/process + 2 technical/hybrid approaches"
+          ],
+          outputs: [
+            "10-15 raw Approach Cards",
+            "Tags per card: join improved + approach type",
+            "Who must be involved noted on each card"
+          ],
+          challenges: [
+            "Cards drift into 'solutions' — rewrite into patterns",
+            "People/process cards can be vague — tie to a join + failure mode"
+          ],
+          tips: [
+            "Ban vendor names; use categories (search, catalogue, workflow)",
+            "If a card doesn't name the join, it's too generic"
+          ],
+          epiFocus: [
+            "Approach: Standardized exposure calculation library",
+            "Approach: Cohort definition registry with versioning",
+            "Approach: Lab result annotation workflow"
+          ],
+          financeFocus: [
+            "Approach: Standardized cost allocation formulas",
+            "Approach: Budget category registry with mappings",
+            "Approach: Purchase approval workflow with audit trail"
+          ],
+          stakeholders: [
+            { role: "Data Scientist", gain: "Space for patterns like lineage, catalogues, search", icon: "fas fa-brain", color: "#8b5cf6" },
+            { role: "HR", gain: "Enablement approaches (roles, communities) are valid", icon: "fas fa-users", color: "#3b82f6" },
+            { role: "Biology", gain: "Lightweight context capture approaches can be proposed", icon: "fas fa-flask", color: "#06b6d4" },
+            { role: "QA", gain: "Auditability constraints are embedded", icon: "fas fa-check-double", color: "#ef4444" }
+          ]
+        },
+        {
+          id: 5,
+          title: "Gallery Walk",
+          description: "Teams learn from other datasets and spot repeating patterns across joins. Feedback is captured as notes, not debates.",
+          duration: "40min",
+          icon: "fas fa-walking",
+          color: "#3b82f6",
+          objectives: [
+            "Post Dot-Join maps and cards",
+            "Rotate; leave 'Need clarity' and 'Key risk' notes",
+            "Encourage feedback from different roles"
+          ],
+          outputs: [
+            "Clarifications/risks attached to cards",
+            "List of patterns repeating across datasets",
+            "List of high-leverage joins seen in multiple teams"
+          ],
+          challenges: [
+            "Feedback can become debate — keep it as notes",
+            "Balance voices so one group doesn't dominate"
+          ],
+          tips: [
+            "Use only 'clarify' and 'risk' notes; avoid blanket 'won't work'"
+          ],
+          epiFocus: [
+            "Pattern: Version control for definitions",
+            "Pattern: Context capture for lab outliers",
+            "Pattern: Site-level customization tracking"
+          ],
+          financeFocus: [
+            "Pattern: Approval workflow with escalation",
+            "Pattern: Budget vs actual reconciliation",
+            "Pattern: Fiscal period alignment"
+          ],
+          crossDatasetPatterns: [
+            "Definition registries appear in both domains",
+            "Workflow patterns for approvals/validation",
+            "Versioning of business rules"
+          ],
+          stakeholders: [
+            { role: "Data Owner", gain: "Early governance flags and language consistency", icon: "fas fa-key", color: "#10b981" },
+            { role: "Finance", gain: "Recurring definition/control pain becomes clear", icon: "fas fa-chart-line", color: "#84cc16" },
+            { role: "Biology", gain: "Misinterpretations of lab reality corrected early", icon: "fas fa-flask", color: "#06b6d4" },
+            { role: "Operations", gain: "Seeds a portfolio of approaches across the organisation", icon: "fas fa-tasks", color: "#6366f1" }
+          ]
+        },
+        {
+          id: 6,
+          title: "Refine & Stress-Test",
+          description: "Turn raw cards into clear approaches with assumptions, risks, and prerequisites explicit so voting is fair and informed.",
+          duration: "90min",
+          icon: "fas fa-hammer",
+          color: "#ef4444",
+          objectives: [
+            "Merge duplicates; preserve distinct alternatives",
+            "Add assumptions, failure modes, prerequisites, and who must be involved",
+            "Rewrite in plain language readable by HR/Finance/Science"
+          ],
+          outputs: [
+            "4-6 refined cards",
+            "One-line value statement tied to a join breakpoint",
+            "'Needs to be true' dependency list"
+          ],
+          challenges: [
+            "Over-merging can erase real alternatives",
+            "Stress-testing can drift into implementation — keep it at assumptions/prereqs"
+          ],
+          tips: [
+            "A strong card answers: 'Who changes what behaviour so knowledge travels across the join?'"
+          ],
+          epiFocus: [
+            "Refined: Exposure calculation library with validation rules",
+            "Refined: Cohort registry with governance workflow",
+            "Refined: Lab annotation with quality flags"
+          ],
+          financeFocus: [
+            "Refined: Cost allocation with audit trail",
+            "Refined: Budget category mapping service",
+            "Refined: Purchase workflow with role-based approvals"
+          ],
+          stakeholders: [
+            { role: "Data Scientist", gain: "Dependencies (definitions, stewardship) become explicit", icon: "fas fa-brain", color: "#8b5cf6" },
+            { role: "HR", gain: "Capability/incentive prerequisites are visible", icon: "fas fa-users", color: "#3b82f6" },
+            { role: "IT", gain: "Platform prerequisites are visible", icon: "fas fa-server", color: "#f59e0b" },
+            { role: "QA", gain: "Compliance implications are explicit", icon: "fas fa-check-double", color: "#ef4444" }
+          ]
+        },
+        {
+          id: 7,
+          title: "Share & Handoff",
+          description: "Present refined approaches so organisers can consolidate across datasets into a single catalogue for post-hackathon voting.",
+          duration: "115min",
+          icon: "fas fa-handshake",
+          color: "#6366f1",
+          objectives: [
+            "Pitch template: dataset → top joins → 3-4 approaches → assumptions/risks",
+            "Q&A is about trade-offs and fit (not tooling)",
+            "Capture repeating patterns and disagreements for consolidation"
+          ],
+          outputs: [
+            "Presented approach set per dataset",
+            "Cross-dataset pattern list",
+            "Consolidation notes for organisers"
+          ],
+          challenges: [
+            "Timeboxing is critical",
+            "Encourage honest assumptions over salesmanship"
+          ],
+          tips: [
+            "Use the same pitch template for all teams to keep comparisons fair"
+          ],
+          epiFocus: [
+            "Final pitch: Improving cohort-lab joins",
+            "Final pitch: Standardizing exposure definitions",
+            "Final pitch: Protocol deviation tracking"
+          ],
+          financeFocus: [
+            "Final pitch: Improving purchase-budget joins",
+            "Final pitch: Standardizing cost allocation",
+            "Final pitch: Budget reconciliation automation"
+          ],
+          crossDatasetPatterns: [
+            "Both need definition management",
+            "Both need approval workflows",
+            "Both need reconciliation processes",
+            "Both benefit from role-based access patterns"
+          ],
+          stakeholders: [
+            { role: "Data Owner", gain: "Governance patterns can be compared across datasets", icon: "fas fa-key", color: "#10b981" },
+            { role: "HR", gain: "People-first approaches get equal airtime", icon: "fas fa-users", color: "#3b82f6" },
+            { role: "Finance", gain: "Cost/control implications are visible", icon: "fas fa-chart-line", color: "#84cc16" },
+            { role: "Operations", gain: "Clean handoff to consolidation and voting", icon: "fas fa-tasks", color: "#6366f1" }
+          ]
+        }
+      ]
+    };
+
+    // App state
+    let currentStep = 0;
+
+    // DOM elements
+    const progressStepsEl = document.getElementById('progressSteps');
+    const contentHeaderEl = document.getElementById('contentHeader');
+    const contentGridEl = document.getElementById('contentGrid');
+    const stakeholderGridEl = document.getElementById('stakeholderGrid');
+    const journeyVisualizationEl = document.getElementById('journeyVisualization');
+    const comparisonGridEl = document.getElementById('comparisonGrid');
+    const stepCounterEl = document.getElementById('stepCounter');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    // Initialize the app
+    function initApp() {
+      renderProgressSteps();
+      renderJourneyVisualization();
+      renderStep(currentStep);
+      setupEventListeners();
+    }
+
+    // Render progress steps in sidebar
+    function renderProgressSteps() {
+      progressStepsEl.innerHTML = '';
+      
+      hackathonData.steps.forEach((step, index) => {
+        const isActive = index === currentStep;
+        const isCompleted = index < currentStep;
+        
+        const stepEl = document.createElement('div');
+        stepEl.className = `step-indicator ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}`;
+        stepEl.dataset.index = index;
+        
+        stepEl.innerHTML = `
+          <div class="step-number">${step.id}</div>
+          <div class="step-info">
+            <div class="step-name">${step.title}</div>
+            <div class="step-duration">
+              <i class="far fa-clock"></i> ${step.duration}
+            </div>
+          </div>
+          <div class="step-icon">
+            <i class="${step.icon}"></i>
+          </div>
+          ${isCompleted ? '<div class="completion-check"><i class="fas fa-check"></i></div>' : ''}
+        `;
+        
+        stepEl.addEventListener('click', () => {
+          currentStep = index;
+          renderStep(currentStep);
+          renderProgressSteps();
+          renderJourneyVisualization();
+        });
+        
+        progressStepsEl.appendChild(stepEl);
+      });
+    }
+
+    // Render journey visualization
+    function renderJourneyVisualization() {
+      journeyVisualizationEl.innerHTML = '';
+      
+      hackathonData.steps.forEach((step, index) => {
+        const isActive = index === currentStep;
+        const isCompleted = index < currentStep;
+        
+        const stepEl = document.createElement('div');
+        stepEl.className = `journey-step ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}`;
+        
+        stepEl.innerHTML = `
+          <div class="journey-node">${step.id}</div>
+          <div class="journey-label">${step.title}</div>
+        `;
+        
+        stepEl.addEventListener('click', () => {
+          currentStep = index;
+          renderStep(currentStep);
+          renderProgressSteps();
+          renderJourneyVisualization();
+        });
+        
+        journeyVisualizationEl.appendChild(stepEl);
+      });
+    }
+
+    // Render current step
+    function renderStep(stepIndex) {
+      const step = hackathonData.steps[stepIndex];
+      
+      // Update header
+      contentHeaderEl.innerHTML = `
+        <h2 class="step-title">Step ${step.id}: ${step.title}</h2>
+        <p class="step-description">${step.description}</p>
+      `;
+      
+      // Update content grid
+      contentGridEl.innerHTML = `
+        <div class="content-card">
+          <div class="card-header">
+            <div class="card-icon" style="background: ${step.color};">
+              <i class="fas fa-bullseye"></i>
+            </div>
+            <h3 class="card-title">Key Objectives</h3>
+          </div>
+          <div class="card-body">
+            <ul>
+              ${step.objectives.map(obj => `<li>${obj}</li>`).join('')}
+            </ul>
+          </div>
+        </div>
+        
+        <div class="content-card">
+          <div class="card-header">
+            <div class="card-icon" style="background: var(--secondary);">
+              <i class="fas fa-clipboard-check"></i>
+            </div>
+            <h3 class="card-title">Expected Outputs</h3>
+          </div>
+          <div class="card-body">
+            <ul>
+              ${step.outputs.map(output => `<li>${output}</li>`).join('')}
+            </ul>
+          </div>
+        </div>
+        
+        <div class="content-card">
+          <div class="card-header">
+            <div class="card-icon" style="background: var(--warning);">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 class="card-title">Challenges & Tips</h3>
+          </div>
+          <div class="card-body">
+            <p><strong>Challenges:</strong></p>
+            <ul>
+              ${step.challenges.map(challenge => `<li>${challenge}</li>`).join('')}
+            </ul>
+            <p style="margin-top: 15px;"><strong>Tips:</strong></p>
+            <ul>
+              ${step.tips.map(tip => `<li>${tip}</li>`).join('')}
+            </ul>
+          </div>
+        </div>
+      `;
+      
+      // Update comparison section
+      comparisonGridEl.innerHTML = `
+        <div class="comparison-card">
+          <div class="comparison-header">
+            <div class="comparison-icon epi-icon">
+              <i class="${hackathonData.datasets.epi.icon}"></i>
+            </div>
+            <h4 class="comparison-name">Epidemiology Focus</h4>
+          </div>
+          <ul class="comparison-points">
+            ${step.epiFocus.map(item => `<li>${item}</li>`).join('')}
+          </ul>
+        </div>
+        
+        <div class="comparison-card">
+          <div class="comparison-header">
+            <div class="comparison-icon finance-icon">
+              <i class="${hackathonData.datasets.finance.icon}"></i>
+            </div>
+            <h4 class="comparison-name">Accounts Focus</h4>
+          </div>
+          <ul class="comparison-points">
+            ${step.financeFocus.map(item => `<li>${item}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+      
+      // Add cross-dataset patterns if they exist for this step
+      if (step.crossDatasetPatterns) {
+        comparisonGridEl.innerHTML += `
+          <div class="comparison-card" style="grid-column: span 2;">
+            <div class="comparison-header">
+              <div class="comparison-icon" style="background: var(--primary);">
+                <i class="fas fa-link"></i>
+              </div>
+              <h4 class="comparison-name">Cross-Dataset Patterns</h4>
+            </div>
+            <ul class="comparison-points">
+              ${step.crossDatasetPatterns.map(item => `<li>${item}</li>`).join('')}
+            </ul>
+          </div>
+        `;
+      }
+      
+      // Update stakeholder grid
+      stakeholderGridEl.innerHTML = '';
+      step.stakeholders.forEach(stakeholder => {
+        const stakeholderEl = document.createElement('div');
+        stakeholderEl.className = 'stakeholder-card';
+        
+        stakeholderEl.innerHTML = `
+          <div class="stakeholder-icon" style="background: ${stakeholder.color};">
+            <i class="${stakeholder.icon}"></i>
+          </div>
+          <div>
+            <div class="stakeholder-name">${stakeholder.role}</div>
+            <div style="font-size: 0.85rem; color: var(--gray); margin-top: 3px;">${stakeholder.gain}</div>
+          </div>
+        `;
+        
+        stakeholderGridEl.appendChild(stakeholderEl);
+      });
+      
+      // Update step counter
+      stepCounterEl.textContent = `Step ${step.id} of ${hackathonData.steps.length}`;
+      
+      // Update button states
+      prevBtn.disabled = stepIndex === 0;
+      nextBtn.disabled = stepIndex === hackathonData.steps.length - 1;
+    }
+
+    // Set up event listeners
+    function setupEventListeners() {
+      prevBtn.addEventListener('click', () => {
+        if (currentStep > 0) {
+          currentStep--;
+          renderStep(currentStep);
+          renderProgressSteps();
+          renderJourneyVisualization();
+        }
+      });
+      
+      nextBtn.addEventListener('click', () => {
+        if (currentStep < hackathonData.steps.length - 1) {
+          currentStep++;
+          renderStep(currentStep);
+          renderProgressSteps();
+          renderJourneyVisualization();
+        }
+      });
+      
+      // Keyboard navigation
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft' && currentStep > 0) {
+          currentStep--;
+          renderStep(currentStep);
+          renderProgressSteps();
+          renderJourneyVisualization();
+        } else if (e.key === 'ArrowRight' && currentStep < hackathonData.steps.length - 1) {
+          currentStep++;
+          renderStep(currentStep);
+          renderProgressSteps();
+          renderJourneyVisualization();
+        }
+      });
+    }
+
+    // Initialize the app when DOM is loaded
+    document.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>
